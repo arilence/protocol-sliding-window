@@ -94,13 +94,14 @@ class TransmitterWindow(QMainWindow, Ui_Transmitter):
         self.transmitter.startSend(fileLocation)
 
     def browseFiles(self):
-        filename = QFileDialog.getOpenFileName(self, "Open File")
-        if not filename[0]:
+        fileName = QFileDialog.getOpenFileName(self, "Open File")
+        if not fileName[0]:
             self.logMessage("[FILE] No file selected")
             return False
         else:
-            self.logMessage("[FILE] " + filename[0])
-            return filename
+            self.logMessage("[FILE] " + fileName[0])
+            self.fileLocationInput.setText(fileName[0])
+            return fileName
 
     def logMessage(self, log):
         self.logOutput.addItem(log)

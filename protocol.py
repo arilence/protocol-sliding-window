@@ -1,4 +1,5 @@
 from enum import Enum
+import base64
 
 class PPacketType(Enum):
     def __str__(self):
@@ -51,6 +52,7 @@ class PPacket:
         return False
 
     def setData(self, data):
+        #bytesConverted = base64.b64encode(data)
         self.data = data
 
     def setAcked(self):
@@ -61,60 +63,16 @@ class PPacket:
         seqNum = "{:<12.12}".format(str(self.seqNum))
         windowSize = "{:<3.3}".format(str(self.windowSize))
         ackNum = "{:<12.12}".format(str(self.ackNum))
+        data = "{:<2014.2014}".format(str(self.data))
 
         s = ""
         s += packetType + "|"                           # MAX:    3 Characters
         s += seqNum + "|"                               # MAX:    4 Characters
         s += windowSize + "|"                           # MAX:    3 Characters
         s += ackNum + "|"                               # MAX:    4 Characters
-        s += str("{:<2014.2014}".format(self.data))     # MAX: 2014 Characters
+        s += data                                       # MAX: 2014 Characters
         return s
 
 class PWindow:
     def __init__(self, windowSize):
-        self.windowList = []
-        self.windowSize = windowSize
-        self.leftSide = 0
-        self.rightSide = windowSize - 1
-        self.usableAddLocation = 0
-        self.usableGetLocation = 0
-
-    def canAdd(self):
-        if self.usableAddLocation <= self.rightSide:
-            return True
-        else:
-            return False
-
-    def add(self, packet):
-        if self.usableAddLocation <= self.rightSide:
-            self.windowList.append(packet)
-            self.usableAddLocation += 1
-
-    def ack(self, seqNum):
-        for index, item in enumerate(self.windowList):
-            if item.seqNum == seqNum:
-                item.setAcked()
-            if index == self.leftSide and item.acked == True:
-                self.leftSide += 1
-                if self.rightSide - self.leftSide <= self.windowSize:
-                    self.rightSide += 1
-
-    def get(self):
-        if self.usableGetLocation < self.usableAddLocation:
-            self.usableGetLocation += 1
-            return self.windowList[self.usableGetLocation-1]
-
-    def __str__(self):
-        s = ""
-        for index, item in enumerate(self.windowList):
-            if index == self.leftSide:
-                s += '\033[92m' # GREEN
-            elif index == self.rightSide:
-                s += '\033[1;31m' # RED
-            elif index == self.usableAddLocation:
-                s += '\033[1;33' # YELLOW
-            elif index == self.usableGetLocation:
-                s += '\033[94m' # BLUE
-            s += "1" if item.acked else "0"
-            s += '\033[0m'
-        return s
+        pass

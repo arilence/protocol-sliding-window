@@ -5,7 +5,8 @@ from socket import (
 from threading import Thread
 from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QObject)
 from protocol import PWindow, PPacket, PPacketType
-import time, sys, os
+from timeit import default_timer
+import time, sys, os, collections
 import select as fileSelect
 
 ENCODING_TYPE = "utf-8"
@@ -56,14 +57,21 @@ class Transmitter(LogAdapter):
         self.network = network
 
     def startSend(self, fileLocation):
+        # Check if file really exists
+        if not os.path.isfile(fileLocation):
+            self.logSignal.emit("[ERROR] File doesn't exist")
+            return
+
+        # Start the send process
         Thread(target=self.send, args=(fileLocation,)).start()
         return True
 
     def send(self, fileLocation):
-        window = PWindow(7)         # Start with a smallish window size
         self.sequenceNumber = 0
-        self.startingSeqNum = 0
-        self.currentState = "SYN"
+        self.windowSize = 1
+        self.sendingFileData = True
+        self.shouldSend = True
+        self.currentState = PPacketType.SYN
 
         # Get the file ready for reading
         theFile = open(fileLocation, 'rb')
@@ -76,52 +84,88 @@ class Transmitter(LogAdapter):
         Thread(target=self.receivingAckThread).start()
 
     def sendingFileThread(self, theFile):
-        if self.currentState == "SYN":
-            # Send packet to initiate file transfer
-            packetInitial = PPacket(PPacketType.SYN, self.startingSeqNum, 7, self.startingSeqNum + 1)
-            self.network.send(str(packetInitial))
-        if self.currentStart == "DATA":
-            l = theFile.read(PPacket.DATA_SIZE)
-            while (l):
-                dataPacket = PPacket(PPacketType.DATA,
-                                     packetResponse.ackNum,
-                                     7,
-                                     packetResponse.ackNum + 1)
-                dataPacket.setData(str(l, ENCODING_TYPE))
-                self.network.send(str(dataPacket))
-                l = theFile.read(PPacket.DATA_SIZE)
+        # Send all of the file data
+        self.slidingWindow = collections.deque()
+        self.test_num = 0
+        sendTime = default_timer()
 
-            packetInitial = PPacket(PPacketType.EOT, 1, 7, 2)
-            self.network.send(str(packetInitial))
-        if self.currentState == "EOF":
-            self.resetFileTransfer()
-            self.logSignal.emit("FILE TRANSFER COMPLETE")
+        while self.sendingFileData:
+            if self.currentState == PPacketType.SYN:
+                if self.shouldSend:
+                    packetInitial = PPacket(PPacketType.SYN, self.sequenceNumber, self.windowSize, self.sequenceNumber + 1)
+                    self.network.send(str(packetInitial))
+                    sendTime = default_timer()
+                    self.shouldSend = False
+
+            elif self.currentState == PPacketType.DATA:
+                if len(self.slidingWindow) < self.windowSize and self.test_num < 10:
+                    packet = PPacket(PPacketType.DATA, self.sequenceNumber, self.windowSize, self.sequenceNumber + 1)
+                    packet.setData("Hello")
+                    self.slidingWindow.append(packet)
+                    self.test_num = self.test_num + 1
+
+                elif self.shouldSend:
+                    tempSlidingWindow = self.slidingWindow.copy()
+                    for index in range(len(tempSlidingWindow)):
+                        transferPacket = tempSlidingWindow.popleft()
+                        self.logSignal.emit(str(transferPacket))
+                        self.network.send(str(transferPacket))
+                    sendTime = default_timer()
+                    self.shouldSend = False
+
+            elif self.currentState == PPacketType.EOT:
+                if self.shouldSend:
+                    packetEot = PPacket(PPacketType.EOT, self.sequenceNumber, self.windowSize, self.sequenceNumber + 1)
+                    self.network.send(str(packetEot))
+                    sendTime = default_timer()
+                    self.shouldSend = False
+
+            if default_timer() - sendTime >= 2:
+                self.shouldSend = True
 
     def receivingAckThread(self):
-        while True:
-            rawData = self.network.receive()
-            data = rawData.decode(ENCODING_TYPE)
-            packetResponse = PPacket.parsePacket(data)
-            if not packetResponse:
-                return
-            self.logPacket(packetResponse)
+        socket = self.network.sockObj
+        size = self.network.size
 
-            if packetResponse.packetType == PPacketType.ACK and packetResponse.seqNum == self.startingSeqNum + 1:
-                if self.currentState == "SYN":
-                    self.currentState == "DATA"
-                elif self.currentState == "DATA":
-                    self.currentState == "EOF"
+        while self.sendingFileData:
+            r, _, _ = fileSelect.select([socket], [], [])
+            if r and self.sendingFileData:
+                rawData = self.network.receive()
+                data = rawData.decode(ENCODING_TYPE)
+                if data:
+                    packetResponse = PPacket.parsePacket(data)
+                    if not packetResponse:
+                        return
+                    self.logPacket(packetResponse)
 
-    def resetFileTransfer(self):
-        self.sequenceNumber = 0
+                    if packetResponse.seqNum == self.sequenceNumber + 1 and packetResponse.packetType == PPacketType.ACK:
+                        if self.currentState == PPacketType.SYN:
+                            self.currentState = PPacketType.DATA
+                            self.shouldSend = True
+                            self.sequenceNumber = packetResponse.ackNum
+                        elif self.currentState == PPacketType.DATA:
+                            if self.test_num == 10:
+                                self.currentState = PPacketType.EOT
+
+                            diff = packetResponse.seqNum - self.sequenceNumber
+                            for num in range(0, diff):
+                                self.slidingWindow.popleft()
+                            self.sequenceNumber = packetResponse.ackNum
+                            self.shouldSend = True
+
+                        elif self.currentState == PPacketType.EOT:
+                            self.logSignal.emit("FILE TRANFER COMPLETE")
+                            self.sendingFileData = False
 
 class Receiver(LogAdapter):
     def __init__(self, network):
         super(LogAdapter, self).__init__()
         self.keepListening = False
-        self.receivingFile = False
         self.theFile = None
         self.network = network
+        self.receivingFile = False
+        self.sequenceNumber = 0
+        self.windowSize = 7
 
     def start(self):
         self.keepListening = True
@@ -149,50 +193,46 @@ class Receiver(LogAdapter):
             return
         self.logPacket(packetInput)
 
-        # Deal with packet type
-        if packetInput.packetType == PPacketType.SYN:
-            self.logSignal.emit("START RECEIVING FILE")
+        # Accept SYN if not currently in the middle of a transfer
+        if not self.receivingFile and packetInput.packetType == PPacketType.SYN:
             self.startReceivingFile(packetInput)
-        elif packetInput.packetType == PPacketType.ACK:
-            print("Package Type: ACK")
-            # TODO: dafuq? error!
-        elif packetInput.packetType == PPacketType.DATA:
+
+        # Accept DATA if in the middle of a transfer
+        elif self.receivingFile and packetInput.packetType == PPacketType.DATA:
             self.receiveData(packetInput)
-        elif packetInput.packetType == PPacketType.EOT:
+
+        # Accept EOT if in the middle of a transfer
+        elif self.receivingFile and packetInput.packetType == PPacketType.EOT:
             self.receiveEOT(packetInput)
 
-        # Send ACK back
-        ackNum = packetInput.ackNum
-        windowSize = packetInput.windowSize
-        packetAck = PPacket(PPacketType.ACK, ackNum, windowSize, ackNum+1)
+        self.replyAck()
+
+    def replyAck(self):
+        packetAck = PPacket(PPacketType.ACK, self.sequenceNumber, self.windowSize, self.sequenceNumber+1)
         self.network.send(str(packetAck))
 
-    def resetFileTransfer(self):
-        self.receivingFile = False
-        self.theFile = None
-        self.curSequenceNumber = 0
-
     def startReceivingFile(self, packet):
-        if not self.receivingFile:
-            self.receivingFile = True
-            self.theFile = open("thefile.txt", 'wb')
-            self.curSequenceNumber = packet.seqNum
-        else:
-            # hmm... a new file is trying to be transferred
-            pass
+        self.logSignal.emit("START RECEIVING FILE")
+        self.windowSize = packet.windowSize
+        self.receivingFile = True
+        self.sequenceNumber = packet.ackNum
+        self.theFile = open("thefile.txt", 'wb')
 
     def receiveData(self, packet):
-        # Make sure we receive data in the correct order
-        if packet.seqNum == self.curSequenceNumber + 1:
-            data = packet.data.decode(ENCODING_TYPE)
-            self.theFile.write(data)
+        if packet.seqNum - self.sequenceNumber != 1:
+            return
+
+        self.sequenceNumber = packet.ackNum
+        #data = packet.data.decode(ENCODING_TYPE)
+        #self.theFile.write(packet.data)
 
     def receiveEOT(self, packet):
-        # Make sure we receive data in the correct order
-        if packet.seqNum == self.curSequenceNumber + 1:
-            self.theFile.close()
-            self.resetFileTransfer()
-            self.logSignal.emit("FILE TRANSFER COMPLETE")
+        if packet.seqNum - self.sequenceNumber != 1:
+            return
+
+        self.sequenceNumber = packet.ackNum
+        self.logSignal.emit("FILE TRANSFER COMPLETE")
+        self.theFile.close()
 
 class Emulator:
     def __init__(self, address, port):
