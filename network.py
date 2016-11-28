@@ -238,7 +238,6 @@ class Receiver(LogAdapter):
             return
 
         self.sequenceNumber = packet.ackNum
-        # TODO: save data to the file on disk
         self.theFile.write(packet.data)
 
     def receiveEOT(self, packet):
@@ -247,8 +246,8 @@ class Receiver(LogAdapter):
 
         self.sequenceNumber = packet.ackNum
         self.receivingFile = False
-        self.logSignal.emit("FILE TRANSFER COMPLETE")
         self.theFile.close()
+        self.logSignal.emit("FILE TRANSFER COMPLETE")
 
     def replyAck(self):
         packetAck = PPacket(PPacketType.ACK, self.sequenceNumber, self.windowSize, self.sequenceNumber + 1)
@@ -299,7 +298,6 @@ class Emulator:
             if not rawData:
                 break
             else:
-                # TODO: allow clients to manually disconnect
                 packet = PPacket.parsePacket(rawData)
                 if packet.packetType == PPacketType.DCN:
                     self.removeClient(client)
