@@ -24,12 +24,9 @@ class EmulatorWindow(QMainWindow, Ui_Emulator):
         super(EmulatorWindow, self).__init__(parent)
         self.setupUi(self)
 
-class ClientWindow(QMainWindow, Ui_Client):
-    APP_NAME = "Transfer App"
-    WINDOW_HEIGHT = 250
-    WINDOW_WIDTH = 500
 
-    def __init__(self, Ui_Client, client, parent=None):
+class ClientWindow(QMainWindow, Ui_Client):
+    def __init__(self, Ui_Client, transmitter, parent=None):
         super(ClientWindow, self).__init__(parent)
 
         # Connect UI Elements
