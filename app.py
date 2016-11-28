@@ -16,8 +16,7 @@ if __name__ == "__main__":
     args = parseCmdArguments()
 
     if (args.emulator):
-        emulator = Emulator(args.ip, args.port)
+        window = Application(sys.argv, "C7005 Final Project", True)
 
     else:
-        window = Application(sys.argv, "C7005 Final Project")
-        #transmitter = Transmitter(args.ip, args.port)
+        window = Application(sys.argv, "C7005 Final Project", False)

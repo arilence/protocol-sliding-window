@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file './ui/ui_transmitter.ui'
+# Form implementation generated from reading ui file './ui/ui_client.ui'
 #
 # Created by: PyQt5 UI code generator 5.7
 #
@@ -8,15 +8,15 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class Ui_Transmitter(object):
-    def setupUi(self, Transmitter):
-        Transmitter.setObjectName("Transmitter")
-        Transmitter.setEnabled(True)
-        Transmitter.resize(711, 538)
-        Transmitter.setWindowTitle("")
-        Transmitter.setAnimated(True)
-        Transmitter.setDocumentMode(False)
-        self.centralwidget = QtWidgets.QWidget(Transmitter)
+class Ui_Client(object):
+    def setupUi(self, Client):
+        Client.setObjectName("Client")
+        Client.setEnabled(True)
+        Client.resize(711, 538)
+        Client.setWindowTitle("")
+        Client.setAnimated(True)
+        Client.setDocumentMode(False)
+        self.centralwidget = QtWidgets.QWidget(Client)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -111,30 +111,30 @@ class Ui_Transmitter(object):
         self.horizontalLayout_2.addWidget(self.logCheckBox)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.gridLayout_2.addLayout(self.verticalLayout, 0, 0, 1, 1)
-        Transmitter.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(Transmitter)
+        Client.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(Client)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 711, 22))
         self.menubar.setObjectName("menubar")
-        Transmitter.setMenuBar(self.menubar)
+        Client.setMenuBar(self.menubar)
 
-        self.retranslateUi(Transmitter)
+        self.retranslateUi(Client)
         self.modeTabWidget.setCurrentIndex(0)
-        QtCore.QMetaObject.connectSlotsByName(Transmitter)
+        QtCore.QMetaObject.connectSlotsByName(Client)
 
-    def retranslateUi(self, Transmitter):
+    def retranslateUi(self, Client):
         _translate = QtCore.QCoreApplication.translate
-        self.label.setText(_translate("Transmitter", "Connection Details"))
-        self.addressInput.setText(_translate("Transmitter", "localhost"))
-        self.addressInput.setPlaceholderText(_translate("Transmitter", "Address"))
-        self.portInput.setText(_translate("Transmitter", "7005"))
-        self.portInput.setPlaceholderText(_translate("Transmitter", "Port"))
-        self.connectBtn.setText(_translate("Transmitter", "Connect"))
-        self.label_2.setText(_translate("Transmitter", "Data Configuration"))
-        self.fileLocationBtn.setText(_translate("Transmitter", "Browse"))
-        self.sendBtn.setText(_translate("Transmitter", "Send File"))
-        self.modeTabWidget.setTabText(self.modeTabWidget.indexOf(self.transmitTab), _translate("Transmitter", "Transmitter"))
-        self.modeTabWidget.setTabText(self.modeTabWidget.indexOf(self.receiveTab), _translate("Transmitter", "Receiver"))
-        self.logOutputLabel.setText(_translate("Transmitter", "Log Output"))
-        self.clearLogBtn.setText(_translate("Transmitter", "Clear Log"))
-        self.logCheckBox.setText(_translate("Transmitter", "Save Log"))
+        self.label.setText(_translate("Client", "Connection Details"))
+        self.addressInput.setText(_translate("Client", "localhost"))
+        self.addressInput.setPlaceholderText(_translate("Client", "Address"))
+        self.portInput.setText(_translate("Client", "7005"))
+        self.portInput.setPlaceholderText(_translate("Client", "Port"))
+        self.connectBtn.setText(_translate("Client", "Connect"))
+        self.label_2.setText(_translate("Client", "Data Configuration"))
+        self.fileLocationBtn.setText(_translate("Client", "Browse"))
+        self.sendBtn.setText(_translate("Client", "Send File"))
+        self.modeTabWidget.setTabText(self.modeTabWidget.indexOf(self.transmitTab), _translate("Client", "Transmitter"))
+        self.modeTabWidget.setTabText(self.modeTabWidget.indexOf(self.receiveTab), _translate("Client", "Receiver"))
+        self.logOutputLabel.setText(_translate("Client", "Log Output"))
+        self.clearLogBtn.setText(_translate("Client", "Clear Log"))
+        self.logCheckBox.setText(_translate("Client", "Save Log"))
 

@@ -3,24 +3,34 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.uic import loadUi
-from ui.ui_transmitter import Ui_Transmitter
+from ui.ui_client import Ui_Client
+from ui.ui_emulator import Ui_Emulator
 from network import *
 
 class Application():
-    def __init__(self, sysArgv, title):
+    def __init__(self, sysArgv, title, emulator):
         app = QApplication(sysArgv)
 
-        window = TransmitterWindow(Ui_Transmitter(), title)
-        window.show()
+        if emulator:
+            window = EmulatorWindow(Ui_Emulator(), title)
+            window.show()
+        else:
+            window = ClientWindow(Ui_Client(), title)
+            window.show()
         sys.exit(app.exec_())
 
-class TransmitterWindow(QMainWindow, Ui_Transmitter):
+class EmulatorWindow(QMainWindow, Ui_Emulator):
+    def __init__(self, Ui_Client, client, parent=None):
+        super(EmulatorWindow, self).__init__(parent)
+        self.setupUi(self)
+
+class ClientWindow(QMainWindow, Ui_Client):
     APP_NAME = "Transfer App"
     WINDOW_HEIGHT = 250
     WINDOW_WIDTH = 500
 
-    def __init__(self, Ui_Transmitter, transmitter, parent=None):
-        super(TransmitterWindow, self).__init__(parent)
+    def __init__(self, Ui_Client, client, parent=None):
+        super(ClientWindow, self).__init__(parent)
 
         # Connect UI Elements
         self.setupUi(self)
