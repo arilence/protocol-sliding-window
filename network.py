@@ -93,6 +93,7 @@ class Transmitter(LogAdapter):
             if self.currentState == PPacketType.SYN:
                 if self.shouldSend:
                     packetInitial = PPacket(PPacketType.SYN, self.sequenceNumber, self.windowSize, self.sequenceNumber + 1)
+                    self.logPacket(packetInitial)
                     self.network.send(str(packetInitial))
                     sendTime = default_timer()
                     self.shouldSend = False
@@ -108,7 +109,7 @@ class Transmitter(LogAdapter):
                     tempSlidingWindow = self.slidingWindow.copy()
                     for index in range(len(tempSlidingWindow)):
                         transferPacket = tempSlidingWindow.popleft()
-                        self.logSignal.emit(str(transferPacket))
+                        self.logPacket(transferPacket)
                         self.network.send(str(transferPacket))
                     sendTime = default_timer()
                     self.shouldSend = False
@@ -116,6 +117,7 @@ class Transmitter(LogAdapter):
             elif self.currentState == PPacketType.EOT:
                 if self.shouldSend:
                     packetEot = PPacket(PPacketType.EOT, self.sequenceNumber, self.windowSize, self.sequenceNumber + 1)
+                    self.logPacket(packetEot)
                     self.network.send(str(packetEot))
                     sendTime = default_timer()
                     self.shouldSend = False
@@ -161,11 +163,8 @@ class Receiver(LogAdapter):
     def __init__(self, network):
         super(LogAdapter, self).__init__()
         self.keepListening = False
-        self.theFile = None
-        self.network = network
         self.receivingFile = False
-        self.sequenceNumber = 0
-        self.windowSize = 7
+        self.network = network
 
     def start(self):
         self.keepListening = True
@@ -198,23 +197,20 @@ class Receiver(LogAdapter):
             self.startReceivingFile(packetInput)
 
         # Accept DATA if in the middle of a transfer
-        elif self.receivingFile and packetInput.packetType == PPacketType.DATA:
+        elif packetInput.packetType == PPacketType.DATA:
             self.receiveData(packetInput)
 
         # Accept EOT if in the middle of a transfer
-        elif self.receivingFile and packetInput.packetType == PPacketType.EOT:
+        elif packetInput.packetType == PPacketType.EOT:
             self.receiveEOT(packetInput)
 
         self.replyAck()
 
-    def replyAck(self):
-        packetAck = PPacket(PPacketType.ACK, self.sequenceNumber, self.windowSize, self.sequenceNumber+1)
-        self.network.send(str(packetAck))
-
     def startReceivingFile(self, packet):
         self.logSignal.emit("START RECEIVING FILE")
-        self.windowSize = packet.windowSize
+        self.sequenceNumber = 0
         self.receivingFile = True
+        self.windowSize = packet.windowSize
         self.sequenceNumber = packet.ackNum
         self.theFile = open("thefile.txt", 'wb')
 
@@ -223,6 +219,7 @@ class Receiver(LogAdapter):
             return
 
         self.sequenceNumber = packet.ackNum
+        # TODO: save data to the file on disk
         #data = packet.data.decode(ENCODING_TYPE)
         #self.theFile.write(packet.data)
 
@@ -231,8 +228,14 @@ class Receiver(LogAdapter):
             return
 
         self.sequenceNumber = packet.ackNum
+        self.receivingFile = False
         self.logSignal.emit("FILE TRANSFER COMPLETE")
         self.theFile.close()
+
+    def replyAck(self):
+        packetAck = PPacket(PPacketType.ACK, self.sequenceNumber, self.windowSize, self.sequenceNumber + 1)
+        self.logPacket(packetAck)
+        self.network.send(str(packetAck))
 
 class Emulator:
     def __init__(self, address, port):
