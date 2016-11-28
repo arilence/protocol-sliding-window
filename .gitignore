@@ -1,4 +1,6 @@
 receiver_files/
+log-receiver
+log-transmitter
 
 ### Vim ###
 # swap

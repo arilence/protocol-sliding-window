@@ -6,7 +6,7 @@ from threading import Thread
 from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QObject)
 from protocol import PWindow, PPacket, PPacketType
 from timeit import default_timer
-import time, sys, os, collections, ntpath
+import time, sys, os, collections, ntpath, math
 import select as fileSelect
 from random import randint
 
@@ -281,6 +281,9 @@ class Emulator:
     def __init__(self):
         self.client1 = None
         self.client2 = None
+        self.packetCount = 0
+        self.bitErrorValue = 0
+        self.delayValue = 0
 
     def start(self, address, port):
         self.keepListening = True
@@ -289,6 +292,12 @@ class Emulator:
     def stop(self):
         self.shutdown()
         self.keepListening = False
+
+    def setBitError(self, newValue):
+        self.bitErrorValue = newValue
+
+    def setDelay(self, newValue):
+        self.delayValue = newValue
 
     def setupSocket(self, address, port, clientFunc):
         self.theSocket = socket(AF_INET, SOCK_STREAM)
@@ -329,9 +338,8 @@ class Emulator:
                     self.removeClient(client)
                     print("Client Disconnected")
                 else:
-                    # TODO: implement proper bit error rate
-                    num = randint(0,1)
-                    if True:
+                    num = randint(0,100)
+                    if self.bitErrorValue < num:
                         if client is self.client1:
                             self.client2.send(rawData)
                             print("Client 1 -> Client 2")

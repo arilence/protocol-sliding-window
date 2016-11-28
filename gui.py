@@ -53,20 +53,30 @@ class EmulatorWindow(QMainWindow, Ui_Emulator):
         self.emulator.stop()
 
     def bitErrorChanged(self, newValue):
-        self.bitErrorText.setText(str(newValue))
+        try:
+            self.bitErrorText.setText(str(newValue))
+            self.emulator.setBitError(int(newValue))
+        except ValueError as e:
+            pass
 
     def bitTextChanged(self, newValue):
         try:
             self.bitErrorSlider.setValue(int(newValue))
+            self.emulator.setBitError(int(newValue))
         except ValueError as e:
             pass
 
     def delayChanged(self, newValue):
-        self.delayText.setText(str(newValue))
+        try:
+            self.delayText.setText(str(newValue))
+            self.emulator.setDelay(int(newValue))
+        except ValueError as e:
+            pass
 
     def delayTextChanged(self, newValue):
         try:
             self.delaySlider.setValue(int(newValue))
+            self.emulator.setDelay(int(newValue))
         except ValueError as e:
             pass
 
