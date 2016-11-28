@@ -82,11 +82,11 @@ class PPacket:
         data = "{:<2014.2014}".format(str(self.data))
 
         s = ""
-        s += packetType + "|"                           # MAX:    3 Characters
-        s += seqNum + "|"                               # MAX:    4 Characters
-        s += windowSize + "|"                           # MAX:    3 Characters
-        s += ackNum + "|"                               # MAX:    4 Characters
-        s += data                                       # MAX: 2014 Characters
+        s += packetType + "|"
+        s += seqNum + "|"
+        s += windowSize + "|"
+        s += ackNum + "|"
+        s += data
         return s
 
 class PWindow:

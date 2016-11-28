@@ -78,13 +78,6 @@ class Transmitter(LogAdapter):
         self.theFile = open(fileLocation, 'rb')
         fileSize = os.stat(fileLocation)
 
-        # byteData = self.theFile.read(PPacket.DATA_SIZE)
-        # packet = PPacket(PPacketType.SYN, 0, 7, 0)
-        # packet.setData(byteData)
-        # # print(packet.toBytes())
-        # # print("\n PACKET BYTES: " + str(len(packet.toBytes())))
-        # print(str(type(packet.toBytes())))
-
         # Setup Thread for sending packets
         Thread(target=self.sendingFileThread).start()
 
@@ -192,7 +185,6 @@ class Receiver(LogAdapter):
             if r and self.keepListening:
                 # ready to receive
                 rawData = socket.recv(PPacket.PACKET_SIZE)
-                #data = rawData.decode(ENCODING_TYPE)
                 if rawData:
                     Thread(target=self.parseData, args=(rawData,)).start()
 
@@ -230,7 +222,6 @@ class Receiver(LogAdapter):
 
         self.sequenceNumber = packet.ackNum
         # TODO: save data to the file on disk
-        #data = packet.data.decode(ENCODING_TYPE)
         print("Saving to File")
         self.theFile.write(packet.data)
 
@@ -292,18 +283,18 @@ class Emulator:
             if not rawData:
                 break
             else:
-                #data = rawData.decode(ENCODING_TYPE)
-                #packet = PPacket.parsePacket(rawData)
-                # if packet.data and packet.data == 'killsrv':
-                #     self.removeClient(client)
-                #     print("Client Disconnected")
-                # else:
-                if client is self.client1:
-                    self.client2.send(rawData)
-                    print("Client 1 -> Client 2")
-                if client is self.client2:
-                    self.client1.send(rawData)
-                    print("Client 2 -> Client 1")
+                # TODO: allow clients to manually disconnect
+                packet = PPacket.parsePacket(rawData)
+                if packet.data and packet.data == 'killsrv':
+                    self.removeClient(client)
+                    print("Client Disconnected")
+                else:
+                    if client is self.client1:
+                        self.client2.send(rawData)
+                        print("Client 1 -> Client 2")
+                    if client is self.client2:
+                        self.client1.send(rawData)
+                        print("Client 2 -> Client 1")
 
     def shutdown(self):
         self.theSocket.shutdown(SHUT_RDWR)
