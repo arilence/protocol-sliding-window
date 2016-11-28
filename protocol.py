@@ -21,28 +21,33 @@ class PPacketType(Enum):
     EOT  = 4
 
 class PPacket:
+    PACKET_SIZE = 2048
     TYPE_SIZE = 3
     SEQ_SIZE = 12
     WIN_SIZE = 3
     ACK_SIZE = 12
-    DATA_SIZE = 2014
+    DATA_SIZE = PACKET_SIZE - TYPE_SIZE - SEQ_SIZE - WIN_SIZE - ACK_SIZE - 4
 
     def __init__(self, packetType, seqNum, windowSize, ackNum):
         self.packetType = packetType
         self.seqNum = seqNum
         self.windowSize = windowSize
         self.ackNum = ackNum
-        self.acked = False
-        self.data = ""
+        self.data = b''
 
     @staticmethod
     def parsePacket(data):
-        values = data.split('|')
+        values = data.split(b'|', maxsplit=4)
         if len(values) == 4 or len(values) == 5:
-            packetType = PPacketType(int(values[0].strip()))
-            seqNum = int(values[1].strip())
-            windowSize = int(values[2].strip())
-            ackNum = int(values[3].strip())
+            strPacketType = values[0].decode('utf-8')
+            strSeqNum = values[1].decode('utf-8')
+            strWindowSize = values[2].decode('utf-8')
+            strAckNum = values[3].decode('utf-8')
+
+            packetType = PPacketType(int(strPacketType.strip()))
+            seqNum = int(strSeqNum.strip())
+            windowSize = int(strWindowSize.strip())
+            ackNum = int(strAckNum.strip())
             tempPacket = PPacket(packetType, seqNum, windowSize, ackNum)
             if len(values) == 5:
                 data = values[4]
@@ -52,11 +57,22 @@ class PPacket:
         return False
 
     def setData(self, data):
-        #bytesConverted = base64.b64encode(data)
         self.data = data
 
-    def setAcked(self):
-        self.acked = True
+    def toBytes(self):
+        packetType = "{:<3.3}".format(str(self.packetType.value)).encode('utf-8')
+        seqNum = "|{:<12.12}".format(str(self.seqNum)).encode('utf-8')
+        windowSize = "|{:<3.3}".format(str(self.windowSize)).encode('utf-8')
+        ackNum = "|{:<12.12}|".format(str(self.ackNum)).encode('utf-8')
+
+        if not self.data:
+            self.data = b''
+
+        blankBytes = PPacket.DATA_SIZE - len(self.data)
+        if blankBytes == 0:
+            return packetType + seqNum + windowSize + ackNum + self.data
+        else:
+            return packetType + seqNum + windowSize + ackNum + self.data + bytearray(blankBytes)
 
     def __str__(self):
         packetType = "{:<3.3}".format(str(self.packetType.value))

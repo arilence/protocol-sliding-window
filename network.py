@@ -46,7 +46,8 @@ class NetworkAdapter(LogAdapter):
         return True
 
     def send(self, data):
-        self.sockObj.send(str(data).encode(ENCODING_TYPE))
+        #self.sockObj.send(str(data).encode(ENCODING_TYPE))
+        self.sockObj.send(data)
 
     def receive(self):
         return self.sockObj.recv(self.size)
@@ -71,22 +72,29 @@ class Transmitter(LogAdapter):
         self.windowSize = 1
         self.sendingFileData = True
         self.shouldSend = True
+        self.doneReadingFile = False
         self.currentState = PPacketType.SYN
 
         # Get the file ready for reading
-        theFile = open(fileLocation, 'rb')
+        self.theFile = open(fileLocation, 'rb')
         fileSize = os.stat(fileLocation)
 
+        # byteData = self.theFile.read(PPacket.DATA_SIZE)
+        # packet = PPacket(PPacketType.SYN, 0, 7, 0)
+        # packet.setData(byteData)
+        # # print(packet.toBytes())
+        # # print("\n PACKET BYTES: " + str(len(packet.toBytes())))
+        # print(str(type(packet.toBytes())))
+
         # Setup Thread for sending packets
-        Thread(target=self.sendingFileThread, args=(theFile,)).start()
+        Thread(target=self.sendingFileThread).start()
 
         # Setup Thread for receiving packets
         Thread(target=self.receivingAckThread).start()
 
-    def sendingFileThread(self, theFile):
+    def sendingFileThread(self):
         # Send all of the file data
         self.slidingWindow = collections.deque()
-        self.test_num = 0
         sendTime = default_timer()
 
         while self.sendingFileData:
@@ -94,23 +102,26 @@ class Transmitter(LogAdapter):
                 if self.shouldSend:
                     packetInitial = PPacket(PPacketType.SYN, self.sequenceNumber, self.windowSize, self.sequenceNumber + 1)
                     self.logPacket(packetInitial)
-                    self.network.send(str(packetInitial))
+                    self.network.send(packetInitial.toBytes())
                     sendTime = default_timer()
                     self.shouldSend = False
 
             elif self.currentState == PPacketType.DATA:
-                if len(self.slidingWindow) < self.windowSize and self.test_num < 10:
-                    packet = PPacket(PPacketType.DATA, self.sequenceNumber, self.windowSize, self.sequenceNumber + 1)
-                    packet.setData("Hello")
-                    self.slidingWindow.append(packet)
-                    self.test_num = self.test_num + 1
+                if len(self.slidingWindow) < self.windowSize and not self.doneReadingFile:
+                    newFileData = self.theFile.read(PPacket.DATA_SIZE)
+                    if newFileData:
+                        packet = PPacket(PPacketType.DATA, self.sequenceNumber, self.windowSize, self.sequenceNumber + 1)
+                        packet.setData(newFileData)
+                        self.slidingWindow.append(packet)
+                    else:
+                        self.doneReadingFile = True
 
-                elif self.shouldSend:
+                if self.shouldSend:
                     tempSlidingWindow = self.slidingWindow.copy()
                     for index in range(len(tempSlidingWindow)):
                         transferPacket = tempSlidingWindow.popleft()
                         self.logPacket(transferPacket)
-                        self.network.send(str(transferPacket))
+                        self.network.send(transferPacket.toBytes())
                     sendTime = default_timer()
                     self.shouldSend = False
 
@@ -118,11 +129,13 @@ class Transmitter(LogAdapter):
                 if self.shouldSend:
                     packetEot = PPacket(PPacketType.EOT, self.sequenceNumber, self.windowSize, self.sequenceNumber + 1)
                     self.logPacket(packetEot)
-                    self.network.send(str(packetEot))
+                    self.network.send(packetEot.toBytes())
                     sendTime = default_timer()
                     self.shouldSend = False
 
-            if default_timer() - sendTime >= 2:
+            if default_timer() - sendTime >= 0.1:
+                if self.doneReadingFile:
+                    self.currentState =PPacketType.EOT
                 self.shouldSend = True
 
     def receivingAckThread(self):
@@ -133,9 +146,9 @@ class Transmitter(LogAdapter):
             r, _, _ = fileSelect.select([socket], [], [])
             if r and self.sendingFileData:
                 rawData = self.network.receive()
-                data = rawData.decode(ENCODING_TYPE)
-                if data:
-                    packetResponse = PPacket.parsePacket(data)
+                #data = rawData.decode(ENCODING_TYPE)
+                if rawData:
+                    packetResponse = PPacket.parsePacket(rawData)
                     if not packetResponse:
                         return
                     self.logPacket(packetResponse)
@@ -146,7 +159,7 @@ class Transmitter(LogAdapter):
                             self.shouldSend = True
                             self.sequenceNumber = packetResponse.ackNum
                         elif self.currentState == PPacketType.DATA:
-                            if self.test_num == 10:
+                            if self.doneReadingFile:
                                 self.currentState = PPacketType.EOT
 
                             diff = packetResponse.seqNum - self.sequenceNumber
@@ -156,7 +169,7 @@ class Transmitter(LogAdapter):
                             self.shouldSend = True
 
                         elif self.currentState == PPacketType.EOT:
-                            self.logSignal.emit("FILE TRANFER COMPLETE")
+                            self.logSignal.emit("FILE TRANSFER COMPLETE")
                             self.sendingFileData = False
 
 class Receiver(LogAdapter):
@@ -182,9 +195,9 @@ class Receiver(LogAdapter):
             if r and self.keepListening:
                 # ready to receive
                 rawData = socket.recv(size)
-                data = rawData.decode(ENCODING_TYPE)
-                if data:
-                    Thread(target=self.parseData, args=(data,)).start()
+                #data = rawData.decode(ENCODING_TYPE)
+                if rawData:
+                    Thread(target=self.parseData, args=(rawData,)).start()
 
     def parseData(self, data):
         packetInput = PPacket.parsePacket(data)
@@ -212,7 +225,7 @@ class Receiver(LogAdapter):
         self.receivingFile = True
         self.windowSize = packet.windowSize
         self.sequenceNumber = packet.ackNum
-        self.theFile = open("thefile.txt", 'wb')
+        self.theFile = open("thefile.png", 'wb')
 
     def receiveData(self, packet):
         if packet.seqNum - self.sequenceNumber != 1:
@@ -221,7 +234,8 @@ class Receiver(LogAdapter):
         self.sequenceNumber = packet.ackNum
         # TODO: save data to the file on disk
         #data = packet.data.decode(ENCODING_TYPE)
-        #self.theFile.write(packet.data)
+        print("Saving to File")
+        self.theFile.write(packet.data)
 
     def receiveEOT(self, packet):
         if packet.seqNum - self.sequenceNumber != 1:
@@ -235,7 +249,7 @@ class Receiver(LogAdapter):
     def replyAck(self):
         packetAck = PPacket(PPacketType.ACK, self.sequenceNumber, self.windowSize, self.sequenceNumber + 1)
         self.logPacket(packetAck)
-        self.network.send(str(packetAck))
+        self.network.send(packetAck.toBytes())
 
 class Emulator:
     def __init__(self, address, port):
@@ -282,17 +296,18 @@ class Emulator:
             if not rawData:
                 break
             else:
-                data = rawData.decode(ENCODING_TYPE)
-                if data == 'killsrv':
-                    self.removeClient(client)
-                    print("Client Disconnected")
-                else:
-                    if client is self.client1:
-                        self.client2.send(rawData)
-                        print("Client 1 -> Client 2")
-                    if client is self.client2:
-                        self.client1.send(rawData)
-                        print("Client 2 -> Client 1")
+                #data = rawData.decode(ENCODING_TYPE)
+                #packet = PPacket.parsePacket(rawData)
+                # if packet.data and packet.data == 'killsrv':
+                #     self.removeClient(client)
+                #     print("Client Disconnected")
+                # else:
+                if client is self.client1:
+                    self.client2.send(rawData)
+                    print("Client 1 -> Client 2")
+                if client is self.client2:
+                    self.client1.send(rawData)
+                    print("Client 2 -> Client 1")
 
     def shutdown(self):
         self.theSocket.shutdown(SHUT_RDWR)
