@@ -21,7 +21,7 @@ class PPacketType(Enum):
     EOT  = 4
 
 class PPacket:
-    PACKET_SIZE = 2048
+    PACKET_SIZE = 8192
     TYPE_SIZE = 3
     SEQ_SIZE = 12
     WIN_SIZE = 3

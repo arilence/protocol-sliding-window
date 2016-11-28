@@ -31,11 +31,10 @@ class NetworkAdapter(LogAdapter):
         super(LogAdapter, self).__init__()
         self.serverHost = ''
         self.controlPort = 7005
-        self.size = 2048
 
     def connect(self, address, port):
         self.sockObj = socket(AF_INET, SOCK_STREAM)      # Create a TCP socket object
-        self.sockObj.setsockopt(SOL_SOCKET, SO_SNDBUF, self.size)
+        self.sockObj.setsockopt(SOL_SOCKET, SO_SNDBUF, PPacket.PACKET_SIZE)
         self.sockObj.connect((address, port));
         return True
 
@@ -50,7 +49,7 @@ class NetworkAdapter(LogAdapter):
         self.sockObj.send(data)
 
     def receive(self):
-        return self.sockObj.recv(self.size)
+        return self.sockObj.recv(PPacket.PACKET_SIZE)
 
 class Transmitter(LogAdapter):
     def __init__(self, network):
@@ -140,7 +139,6 @@ class Transmitter(LogAdapter):
 
     def receivingAckThread(self):
         socket = self.network.sockObj
-        size = self.network.size
 
         while self.sendingFileData:
             r, _, _ = fileSelect.select([socket], [], [])
@@ -188,13 +186,12 @@ class Receiver(LogAdapter):
 
     def waitForSocket(self):
         socket = self.network.sockObj
-        size = self.network.size
 
         while self.keepListening:
             r, _, _ = fileSelect.select([socket], [], [])
             if r and self.keepListening:
                 # ready to receive
-                rawData = socket.recv(size)
+                rawData = socket.recv(PPacket.PACKET_SIZE)
                 #data = rawData.decode(ENCODING_TYPE)
                 if rawData:
                     Thread(target=self.parseData, args=(rawData,)).start()
@@ -255,7 +252,6 @@ class Emulator:
     def __init__(self, address, port):
         self.listenHost = ''
         self.listenPort = 7005
-        self.size = 2048
         self.client1 = None
         self.client2 = None
 
@@ -291,7 +287,7 @@ class Emulator:
         self.printClients()
 
         while True:
-            rawData = client.recv(self.size)
+            rawData = client.recv(PPacket.PACKET_SIZE)
 
             if not rawData:
                 break
