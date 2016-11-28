@@ -8,6 +8,7 @@ from protocol import PWindow, PPacket, PPacketType
 from timeit import default_timer
 import time, sys, os, collections, ntpath
 import select as fileSelect
+from random import randint
 
 ENCODING_TYPE = "utf-8"
 
@@ -303,12 +304,16 @@ class Emulator:
                     self.removeClient(client)
                     print("Client Disconnected")
                 else:
-                    if client is self.client1:
-                        self.client2.send(rawData)
-                        print("Client 1 -> Client 2")
-                    if client is self.client2:
-                        self.client1.send(rawData)
-                        print("Client 2 -> Client 1")
+                    # TODO: implement proper bit error rate
+                    num = randint(0,1)
+                    if num == 1:
+                        if client is self.client1:
+                            self.client2.send(rawData)
+                            print("Client 1 -> Client 2")
+                        if client is self.client2:
+                            self.client1.send(rawData)
+                            print("Client 2 -> Client 1")
+
 
     def shutdown(self):
         self.theSocket.shutdown(SHUT_RDWR)
