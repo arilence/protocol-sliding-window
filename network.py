@@ -17,15 +17,26 @@ class LogAdapter(QObject):
 
     def __init__(self):
         super(QObject, self).__init__()
+        self.logging = True
+
+    def startLogFile(self, fileName):
+        fileLoc = os.path.join(".", fileName)
+        self.logFile = open(os.path.abspath(fileLoc), 'wb')
+
+    def stopLogFile(self):
+        self.logFile.close()
 
     def logPacket(self, packet):
         packetInfo = "Type: {}, Seq: {}, Ack: {}".format(
             str(packet.packetType), str(packet.seqNum), str(packet.ackNum)
             )
-        self.logSignal.emit("[{}] {}".format(
+        output = "[{}] {}".format(
             packet.packetType.numToStr(),
             packetInfo
-            ))
+            )
+        self.logSignal.emit(output)
+        if self.logging:
+            self.logFile.write((output + "\n").encode(ENCODING_TYPE))
 
 class NetworkAdapter(LogAdapter):
     def __init__(self):
@@ -47,7 +58,6 @@ class NetworkAdapter(LogAdapter):
         return True
 
     def send(self, data):
-        #self.sockObj.send(str(data).encode(ENCODING_TYPE))
         self.sockObj.send(data)
 
     def receive(self):
@@ -57,12 +67,16 @@ class Transmitter(LogAdapter):
     def __init__(self, network):
         super(LogAdapter, self).__init__()
         self.network = network
+        self.logging = True
 
     def startSend(self, fileLocation):
         # Check if file really exists
         if not os.path.isfile(fileLocation):
             self.logSignal.emit("[ERROR] File doesn't exist")
             return
+
+        if self.logging:
+            self.startLogFile('log-transmitter')
 
         # Start the send process
         Thread(target=self.send, args=(fileLocation,)).start()
@@ -80,7 +94,6 @@ class Transmitter(LogAdapter):
         self.theFile = open(fileLocation, 'rb')
         fileSize = os.stat(fileLocation)
         self.tailName = ntpath.basename(fileLocation)
-
 
         # Setup Thread for sending packets
         Thread(target=self.sendingFileThread).start()
@@ -142,7 +155,6 @@ class Transmitter(LogAdapter):
             r, _, _ = fileSelect.select([socket], [], [])
             if r and self.sendingFileData:
                 rawData = self.network.receive()
-                #data = rawData.decode(ENCODING_TYPE)
                 if rawData:
                     packetResponse = PPacket.parsePacket(rawData)
                     if not packetResponse:
@@ -167,12 +179,15 @@ class Transmitter(LogAdapter):
                         elif self.currentState == PPacketType.EOT:
                             self.logSignal.emit("FILE TRANSFER COMPLETE")
                             self.sendingFileData = False
+                            if self.logging:
+                                self.stopLogFile()
 
 class Receiver(LogAdapter):
     def __init__(self, network):
         super(LogAdapter, self).__init__()
         self.keepListening = False
         self.receivingFile = False
+        self.logging = True
         self.network = network
         self.directory = 'receiver_files'
 
@@ -198,7 +213,6 @@ class Receiver(LogAdapter):
         packetInput = PPacket.parsePacket(data)
         if not packetInput:
             return
-        self.logPacket(packetInput)
 
         # Accept SYN if not currently in the middle of a transfer
         if not self.receivingFile and packetInput.packetType == PPacketType.SYN:
@@ -212,7 +226,12 @@ class Receiver(LogAdapter):
         elif packetInput.packetType == PPacketType.EOT:
             self.receiveEOT(packetInput)
 
+        self.logPacket(packetInput)
         self.replyAck()
+
+        if not self.receivingFile and packetInput.packetType == PPacketType.EOT:
+            if self.logging:
+                self.stopLogFile()
 
     def startReceivingFile(self, packet):
         self.logSignal.emit("START RECEIVING FILE")
@@ -220,6 +239,9 @@ class Receiver(LogAdapter):
         self.receivingFile = True
         self.windowSize = packet.windowSize
         self.sequenceNumber = packet.ackNum
+
+        if self.logging:
+            self.startLogFile('log-receiver')
 
         # Make sure the directory exists and file name is correct
         if not os.path.exists(self.directory):
@@ -306,7 +328,7 @@ class Emulator:
                 else:
                     # TODO: implement proper bit error rate
                     num = randint(0,1)
-                    if num == 1:
+                    if True:
                         if client is self.client1:
                             self.client2.send(rawData)
                             print("Client 1 -> Client 2")

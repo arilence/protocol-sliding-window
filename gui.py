@@ -30,6 +30,7 @@ class TransmitterWindow(QMainWindow, Ui_Transmitter):
         self.modeTabWidget.currentChanged.connect(self.changeTab)
         self.modeTabWidget.setCurrentIndex(0)
         self.fileLocationBtn.clicked.connect(self.browseFiles)
+        self.logCheckBox.clicked.connect(self.updateLogging)
 
         # Setup Network
         self.setConnected(False)
@@ -88,6 +89,10 @@ class TransmitterWindow(QMainWindow, Ui_Transmitter):
 
     def changeTab(self, index):
         self.setMode(index)
+
+    def updateLogging(self, checked):
+        self.transmitter.logging = checked
+        self.receiver.logging = checked
 
     def sendFile(self):
         fileLocation = self.fileLocationInput.text()
