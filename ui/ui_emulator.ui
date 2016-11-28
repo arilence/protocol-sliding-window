@@ -98,7 +98,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="connectBtn">
+         <widget class="QPushButton" name="startServerBtn">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -157,19 +157,25 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QSlider" name="horizontalSlider">
+         <widget class="QSlider" name="bitErrorSlider">
+          <property name="maximum">
+           <number>100</number>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEdit">
+         <widget class="QLineEdit" name="bitErrorText">
           <property name="maximumSize">
            <size>
             <width>50</width>
             <height>16777215</height>
            </size>
+          </property>
+          <property name="text">
+           <string>0</string>
           </property>
          </widget>
         </item>
@@ -204,19 +210,25 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QSlider" name="horizontalSlider_2">
+         <widget class="QSlider" name="delaySlider">
+          <property name="maximum">
+           <number>100</number>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEdit_2">
+         <widget class="QLineEdit" name="delayText">
           <property name="maximumSize">
            <size>
             <width>50</width>
             <height>16777215</height>
            </size>
+          </property>
+          <property name="text">
+           <string>0</string>
           </property>
          </widget>
         </item>

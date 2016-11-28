@@ -278,41 +278,44 @@ class Receiver(LogAdapter):
         self.network.send(packetAck.toBytes())
 
 class Emulator:
-    def __init__(self, address, port):
-        self.listenHost = ''
-        self.listenPort = 7005
+    def __init__(self):
         self.client1 = None
         self.client2 = None
 
-        # Setup both Control and Data Sockets
-        self.setupSocket(self.listenPort, self.receive)
+    def start(self, address, port):
+        self.keepListening = True
+        Thread(target=self.setupSocket, args=(address, port, self.receive)).start()
 
-    def setupSocket(self, port, clientFunc):
-        theSocket = socket(AF_INET, SOCK_STREAM)
-        theSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+    def stop(self):
+        self.shutdown()
+        self.keepListening = False
+
+    def setupSocket(self, address, port, clientFunc):
+        self.theSocket = socket(AF_INET, SOCK_STREAM)
+        self.theSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
         # Bind Socket
         try:
-            theSocket.bind((self.listenHost, port))
-            theSocket.listen(5)
+            self.theSocket.bind((address, port))
+            self.theSocket.listen(5)
         except:
             print("Socket couldn\'t be binded")
             raise
 
         # Wait for Connection
-        while True:
-            client, address = theSocket.accept()
+        while self.keepListening:
+            client, address = self.theSocket.accept()
             if self.client1 is None:
                 self.client1 = client
             elif self.client2 is None:
                 self.client2 = client
             else:
-                theSocket.close()
+                self.theSocket.close()
                 break
 
-            Thread(target = clientFunc, args = (theSocket, client, address)).start()
+            Thread(target = clientFunc, args = (client, address)).start()
 
-    def receive(self, theSocket, client, address):
+    def receive(self, client, address):
         self.printClients()
 
         while True:
@@ -338,8 +341,10 @@ class Emulator:
 
 
     def shutdown(self):
-        self.theSocket.shutdown(SHUT_RDWR)
-        self.theSocket.close()
+        try:
+            self.theSocket.close()
+        except Exception as e:
+            pass
 
     def printClients(self):
         client1 = self.client1.getpeername() if self.client1 != None else None

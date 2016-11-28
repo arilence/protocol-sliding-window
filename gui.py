@@ -22,7 +22,53 @@ class Application():
 class EmulatorWindow(QMainWindow, Ui_Emulator):
     def __init__(self, Ui_Client, client, parent=None):
         super(EmulatorWindow, self).__init__(parent)
+        self.serverRunning = False
         self.setupUi(self)
+        self.startServerBtn.clicked.connect(self.toggleServer)
+        self.bitErrorSlider.valueChanged.connect(self.bitErrorChanged)
+        self.bitErrorText.textChanged.connect(self.bitTextChanged)
+        self.delaySlider.valueChanged.connect(self.delayChanged)
+        self.delayText.textChanged.connect(self.delayTextChanged)
+
+        self.emulator = Emulator()
+
+    def toggleServer(self):
+        if self.serverRunning:
+            self.serverRunning = False
+            self.stopServer()
+        else:
+            self.serverRunning = True
+            self.startServer()
+
+    def startServer(self):
+        self.startServerBtn.setText("Stop Server")
+        self.addressInput.setDisabled(True)
+        self.portInput.setDisabled(True)
+        self.emulator.start(self.addressInput.text(), int(self.portInput.text()))
+
+    def stopServer(self):
+        self.startServerBtn.setText("Start Server")
+        self.addressInput.setDisabled(False)
+        self.portInput.setDisabled(False)
+        self.emulator.stop()
+
+    def bitErrorChanged(self, newValue):
+        self.bitErrorText.setText(str(newValue))
+
+    def bitTextChanged(self, newValue):
+        try:
+            self.bitErrorSlider.setValue(int(newValue))
+        except ValueError as e:
+            pass
+
+    def delayChanged(self, newValue):
+        self.delayText.setText(str(newValue))
+
+    def delayTextChanged(self, newValue):
+        try:
+            self.delaySlider.setValue(int(newValue))
+        except ValueError as e:
+            pass
 
 
 class ClientWindow(QMainWindow, Ui_Client):
