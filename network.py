@@ -6,7 +6,7 @@ from threading import Thread
 from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QObject)
 from protocol import PWindow, PPacket, PPacketType
 from timeit import default_timer
-import time, sys, os, collections
+import time, sys, os, collections, ntpath
 import select as fileSelect
 
 ENCODING_TYPE = "utf-8"
@@ -78,6 +78,8 @@ class Transmitter(LogAdapter):
         # Get the file ready for reading
         self.theFile = open(fileLocation, 'rb')
         fileSize = os.stat(fileLocation)
+        self.tailName = ntpath.basename(fileLocation)
+
 
         # Setup Thread for sending packets
         Thread(target=self.sendingFileThread).start()
@@ -94,6 +96,7 @@ class Transmitter(LogAdapter):
             if self.currentState == PPacketType.SYN:
                 if self.shouldSend:
                     packetInitial = PPacket(PPacketType.SYN, self.sequenceNumber, self.windowSize, self.sequenceNumber + 1)
+                    packetInitial.setData(self.tailName.encode(ENCODING_TYPE))
                     self.logPacket(packetInitial)
                     self.network.send(packetInitial.toBytes())
                     sendTime = default_timer()
@@ -170,6 +173,7 @@ class Receiver(LogAdapter):
         self.keepListening = False
         self.receivingFile = False
         self.network = network
+        self.directory = 'receiver_files'
 
     def start(self):
         self.keepListening = True
@@ -215,7 +219,19 @@ class Receiver(LogAdapter):
         self.receivingFile = True
         self.windowSize = packet.windowSize
         self.sequenceNumber = packet.ackNum
-        self.theFile = open("thefile.png", 'wb')
+
+        # Make sure the directory exists and file name is correct
+        if not os.path.exists(self.directory):
+            os.makedirs(self.directory)
+        binaryFileName = packet.data.split(b'\0',1)[0]
+        fileName = binaryFileName.decode(ENCODING_TYPE)
+        fileLoc = os.path.join(self.directory, str(fileName))
+        tailName = ntpath.basename(fileLoc)
+        fullPath = os.path.abspath(fileLoc)
+
+        self.theFile = open(fullPath, 'wb')
+        if not self.theFile:
+            self.theFile = open("temp", 'wb')
 
     def receiveData(self, packet):
         if packet.seqNum - self.sequenceNumber != 1:
@@ -223,7 +239,6 @@ class Receiver(LogAdapter):
 
         self.sequenceNumber = packet.ackNum
         # TODO: save data to the file on disk
-        print("Saving to File")
         self.theFile.write(packet.data)
 
     def receiveEOT(self, packet):
