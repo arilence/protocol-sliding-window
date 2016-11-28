@@ -39,8 +39,9 @@ class NetworkAdapter(LogAdapter):
         return True
 
     def disconnect(self):
-        message = "killsrv"
-        self.sockObj.send(message.encode(ENCODING_TYPE))
+        packet = PPacket(PPacketType.DCN, 0, 0, 0)
+        packet.setData(b'disconnect')
+        self.send(packet.toBytes())
         self.sockObj.shutdown(SHUT_RDWR)
         return True
 
@@ -285,7 +286,7 @@ class Emulator:
             else:
                 # TODO: allow clients to manually disconnect
                 packet = PPacket.parsePacket(rawData)
-                if packet.data and packet.data == 'killsrv':
+                if packet.packetType == PPacketType.DCN:
                     self.removeClient(client)
                     print("Client Disconnected")
                 else:

@@ -19,6 +19,7 @@ class PPacketType(Enum):
     ACK  = 2
     DATA = 3
     EOT  = 4
+    DCN  = 5
 
 class PPacket:
     PACKET_SIZE = 8192
