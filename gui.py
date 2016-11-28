@@ -69,7 +69,7 @@ class TransmitterWindow(QMainWindow, Ui_Transmitter):
                 self.modeTabWidget.setCurrentIndex(0)   # set tab back to transmit
         else:
             try:
-                result = self.network.connect("", 7005)
+                result = self.network.connect(self.addressInput.text(), int(self.portInput.text()))
                 if result == True:
                     self.setConnected(True)
                 else:
