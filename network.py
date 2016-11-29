@@ -230,7 +230,7 @@ class Receiver(LogAdapter):
             r, _, _ = fileSelect.select([socket], [], [])
             if r and self.keepListening:
                 # ready to receive
-                rawData = socket.recv(PPacket.PACKET_SIZE)
+                rawData = self.network.receive()
                 if rawData:
                     Thread(target=self.parseData, args=(rawData,)).start()
 
