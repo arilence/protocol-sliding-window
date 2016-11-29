@@ -94,7 +94,7 @@ class Transmitter(LogAdapter):
 
     def send(self, fileLocation):
         self.windowSize = 10
-        self.timeoutTime = 0.5
+        self.timeoutTime = 1
         self.sentPackets = 0
         self.droppedPackets = 0
         self.currentSequenceNumber = 0
