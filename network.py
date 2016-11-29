@@ -35,9 +35,9 @@
 --
 --      REVISION:           (Date and Description)
 --
---      DESIGNERS:          Anthony Smith
+--      DESIGNERS:          Anthony Smith and Spenser Lee
 --
---      PROGRAMMERS:        Anthony Smith
+--      PROGRAMMERS:        Anthony Smith and Spenser Lee
 --
 --      NOTES:
 --      This file contains three network modules: Transmitter, Receiver, and Emulator.
@@ -62,6 +62,16 @@ from random import randint
 
 ENCODING_TYPE = "utf-8"
 
+"""---------------------------------------------------------------------------------------
+-- CLASS:      LogAdapter
+-- DATE:       29/11/2016
+-- REVISIONS:  (V1.0)
+-- DESIGNER:   Anthony Smith and Spenser Lee
+-- PROGRAMMER: Anthony Smith and Spenser Lee
+--
+-- NOTES:
+-- Provides a connection between the logic and GUI for logging
+--------------------------------------------------------------------------------------"""
 class LogAdapter(QObject):
     logSignal = pyqtSignal(str)
     sentPacketSignal = pyqtSignal(int)
@@ -87,6 +97,16 @@ class LogAdapter(QObject):
         if self.logging:
             self.logFile.write((output + "\n").encode(ENCODING_TYPE))
 
+"""---------------------------------------------------------------------------------------
+-- CLASS:      NetworkAdapter
+-- DATE:       29/11/2016
+-- REVISIONS:  (V1.0)
+-- DESIGNER:   Anthony Smith and Spenser Lee
+-- PROGRAMMER: Anthony Smith and Spenser Lee
+--
+-- NOTES:
+-- Provides access to the network sockets for sending and receiving
+--------------------------------------------------------------------------------------"""
 class NetworkAdapter(LogAdapter):
     def __init__(self):
         super(LogAdapter, self).__init__()
@@ -120,6 +140,16 @@ class NetworkAdapter(LogAdapter):
             data += packet
         return data
 
+"""---------------------------------------------------------------------------------------
+-- CLASS:      Transmitter
+-- DATE:       29/11/2016
+-- REVISIONS:  (V1.0)
+-- DESIGNER:   Anthony Smith and Spenser Lee
+-- PROGRAMMER: Anthony Smith and Spenser Lee
+--
+-- NOTES:
+-- Provides the logic and sliding window protocol for sending data packets
+--------------------------------------------------------------------------------------"""
 class Transmitter(LogAdapter):
     def __init__(self, network):
         super(LogAdapter, self).__init__()
@@ -255,6 +285,16 @@ class Transmitter(LogAdapter):
         self.sentPackets += 1
         self.sentPacketSignal.emit(self.sentPackets)
 
+"""---------------------------------------------------------------------------------------
+-- CLASS:      Receiver
+-- DATE:       29/11/2016
+-- REVISIONS:  (V1.0)
+-- DESIGNER:   Anthony Smith and Spenser Lee
+-- PROGRAMMER: Anthony Smith and Spenser Lee
+--
+-- NOTES:
+-- Provides the logic for receiving packets from the Transmitter and saves them to a file
+--------------------------------------------------------------------------------------"""
 class Receiver(LogAdapter):
     def __init__(self, network):
         super(LogAdapter, self).__init__()
@@ -348,6 +388,16 @@ class Receiver(LogAdapter):
         self.logPacket(packetAck)
         self.network.send(packetAck.toBytes())
 
+"""---------------------------------------------------------------------------------------
+-- CLASS:      Emulator
+-- DATE:       29/11/2016
+-- REVISIONS:  (V1.0)
+-- DESIGNER:   Anthony Smith and Spenser Lee
+-- PROGRAMMER: Anthony Smith and Spenser Lee
+--
+-- NOTES:
+-- Provides the logic for forwarding packets from the Transmitter to the receiver.
+--------------------------------------------------------------------------------------"""
 class Emulator(QObject):
     droppedPacketSignal = pyqtSignal(str)
 

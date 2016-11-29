@@ -3,13 +3,16 @@
 --
 --      PROGRAM:            file_transport
 --
+--      FUNCTIONS:          __init__(self)
+--                          parseCmdArguments()
+--
 --      DATE:               November 29, 2016
 --
 --      REVISION:           (Date and Description)
 --
---      DESIGNERS:          Anthony Smith
+--      DESIGNERS:          Anthony Smith and Spenser Lee
 --
---      PROGRAMMERS:        Anthony Smith
+--      PROGRAMMERS:        Anthony Smith and Spenser Lee
 --
 --      NOTES:
 --      This program is the main entry point for a file transfer program that uses a

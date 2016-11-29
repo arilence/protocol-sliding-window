@@ -3,13 +3,34 @@
 --
 --      PROGRAM:            file_transport
 --
+--      FUNCTIONS:          __init__(self)
+--                          toggleServer(self)
+--                          startServer(self)
+--                          stopServer(self)
+--                          bitErrorChanged(self, newValue)
+--                          bitTextChanged(self, newValue)
+--                          delayChanged(self, newValue)
+--                          delayTextChanged(self, newValue)
+--                          dropPacket(self, value)
+--                          setConnected(self, connected)
+--                          connectPressed(self)
+--                          setMode(self, index)
+--                          changeTab(self, checked)
+--                          updateLogging(self,checked)
+--                          sendFile(self)
+--                          browseFiles(self)
+--                          logMessage(self)
+--                          clearLogMessages(self)
+--                          updateSentPackets(self, num)
+--                          updateRecvAcks(self, value)
+--
 --      DATE:               November 29, 2016
 --
 --      REVISION:           (Date and Description)
 --
---      DESIGNERS:          Anthony Smith
+--      DESIGNERS:          Anthony Smith and Spenser Lee
 --
---      PROGRAMMERS:        Anthony Smith
+--      PROGRAMMERS:        Anthony Smith and Spenser Lee
 --
 --      NOTES:
 --      This file contains the gui initialization to show an interface to the user.
@@ -26,6 +47,16 @@ from ui.ui_client import Ui_Client
 from ui.ui_emulator import Ui_Emulator
 from network import *
 
+"""---------------------------------------------------------------------------------------
+-- CLASS:      Application
+-- DATE:       29/11/2016
+-- REVISIONS:  (V1.0)
+-- DESIGNER:   Anthony Smith
+-- PROGRAMMER: Anthony Smith
+--
+-- NOTES:
+-- PyQt5's main wrapper for holding QWindows inside. Provides a GUI frame that can be filled
+--------------------------------------------------------------------------------------"""
 class Application():
     def __init__(self, sysArgv, title, emulator):
         app = QApplication(sysArgv)
@@ -38,6 +69,16 @@ class Application():
             window.show()
         sys.exit(app.exec_())
 
+"""---------------------------------------------------------------------------------------
+-- CLASS:      EmulatorWindow
+-- DATE:       29/11/2016
+-- REVISIONS:  (V1.0)
+-- DESIGNER:   Anthony Smith
+-- PROGRAMMER: Anthony Smith
+--
+-- NOTES:
+-- Renders the user interface for the emulator window
+--------------------------------------------------------------------------------------"""
 class EmulatorWindow(QMainWindow, Ui_Emulator):
     def __init__(self, Ui_Client, client, parent=None):
         super(EmulatorWindow, self).__init__(parent)
@@ -104,6 +145,16 @@ class EmulatorWindow(QMainWindow, Ui_Emulator):
         self.droppedPackets.setText("Dropped Packets: " + value)
 
 
+"""---------------------------------------------------------------------------------------
+-- CLASS:      ClassWindow
+-- DATE:       29/11/2016
+-- REVISIONS:  (V1.0)
+-- DESIGNER:   Anthony Smith
+-- PROGRAMMER: Anthony Smith
+--
+-- NOTES:
+-- Renders the user interface for the client window (transmitter and receiver)
+--------------------------------------------------------------------------------------"""
 class ClientWindow(QMainWindow, Ui_Client):
     def __init__(self, Ui_Client, transmitter, parent=None):
         super(ClientWindow, self).__init__(parent)
