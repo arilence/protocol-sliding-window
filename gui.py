@@ -31,6 +31,7 @@ class EmulatorWindow(QMainWindow, Ui_Emulator):
         self.delayText.textChanged.connect(self.delayTextChanged)
 
         self.emulator = Emulator()
+        self.emulator.droppedPacketSignal.connect(self.dropPacket)
 
     def toggleServer(self):
         if self.serverRunning:
@@ -80,6 +81,9 @@ class EmulatorWindow(QMainWindow, Ui_Emulator):
         except ValueError as e:
             pass
 
+    def dropPacket(self, value):
+        self.droppedPackets.setText("Dropped Packets: " + value)
+
 
 class ClientWindow(QMainWindow, Ui_Client):
     def __init__(self, Ui_Client, transmitter, parent=None):
@@ -107,6 +111,7 @@ class ClientWindow(QMainWindow, Ui_Client):
         self.transmitter.logSignal.connect(self.logMessage)
         self.receiver.logSignal.connect(self.logMessage)
         self.transmitter.sentPacketSignal.connect(self.updateSentPackets)
+        self.transmitter.receivedAckSignal.connect(self.updateRecvAcks)
 
     def setConnected(self, connected):
         self.isConnected = connected
@@ -180,3 +185,6 @@ class ClientWindow(QMainWindow, Ui_Client):
 
     def updateSentPackets(self, num):
         self.sentPackets.setText("Sent Packets: " + str(num))
+
+    def updateRecvAcks(self, value):
+        self.receivedAcks2.setText("Recv Acks: " + str(value))

@@ -15,6 +15,7 @@ ENCODING_TYPE = "utf-8"
 class LogAdapter(QObject):
     logSignal = pyqtSignal(str)
     sentPacketSignal = pyqtSignal(int)
+    receivedAckSignal = pyqtSignal(int)
 
     def __init__(self):
         super(QObject, self).__init__()
@@ -76,6 +77,8 @@ class Transmitter(LogAdapter):
     def __init__(self, network):
         super(LogAdapter, self).__init__()
         self.network = network
+        self.sentPackets = 0
+        self.receivedAcks = 0
         self.logging = True
 
     def startSend(self, fileLocation):
@@ -94,7 +97,6 @@ class Transmitter(LogAdapter):
     def send(self, fileLocation):
         self.windowSize = 10
         self.timeoutTime = 0.5
-        self.sentPackets = 0
         self.currentSequenceNumber = 0
         self.generatedSequenceNumber = 0
         self.oldestSequenceNumber = 0
@@ -180,6 +182,9 @@ class Transmitter(LogAdapter):
                     self.logPacket(packetResponse)
 
                     if packetResponse.packetType == PPacketType.ACK:
+                        self.receivedAcks += 1
+                        self.receivedAckSignal.emit(self.receivedAcks)
+
                         # Remove packet with ack number that matches seq number
                         for packetTuple in self.slidingWindow:
                             if packetTuple.ackNum <= packetResponse.seqNum:
@@ -300,13 +305,17 @@ class Receiver(LogAdapter):
         self.logPacket(packetAck)
         self.network.send(packetAck.toBytes())
 
-class Emulator:
+class Emulator(QObject):
+    droppedPacketSignal = pyqtSignal(str)
+
     def __init__(self):
+        super(QObject, self).__init__()
         self.client1 = None
         self.client2 = None
         self.packetCount = 0
         self.bitErrorValue = 0
         self.delayValue = 0
+        self.droppedPackets = 0
 
     def start(self, address, port):
         self.keepListening = True
@@ -374,6 +383,9 @@ class Emulator:
                         self.sendPacket(client, rawData)
                     else:
                         self.delayValue
+                else:
+                    self.droppedPackets += 1
+                    self.droppedPacketSignal.emit(str(self.droppedPackets))
 
     def sendPacket(self, client, rawData):
         if client is self.client1:

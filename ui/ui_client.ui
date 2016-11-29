@@ -223,6 +223,13 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <widget class="QLabel" name="receivedAcks2">
+                 <property name="text">
+                  <string>Recv Acks: 0</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </item>
             </layout>
