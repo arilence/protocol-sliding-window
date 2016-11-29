@@ -351,7 +351,14 @@ class Emulator:
         self.printClients()
 
         while True:
-            rawData = client.recv(PPacket.PACKET_SIZE)
+            n = PPacket.PACKET_SIZE
+            theData = b''
+            while len(theData) < n:
+                packet = self.sockObj.recv(n - len(theData))
+                if not packet:
+                    return None
+                theData += packet
+            rawData = theData
 
             if not rawData:
                 break
