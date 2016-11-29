@@ -14,7 +14,6 @@ ENCODING_TYPE = "utf-8"
 
 class LogAdapter(QObject):
     logSignal = pyqtSignal(str)
-    droppedPacketSignal = pyqtSignal(int)
     sentPacketSignal = pyqtSignal(int)
 
     def __init__(self):
@@ -96,7 +95,6 @@ class Transmitter(LogAdapter):
         self.windowSize = 10
         self.timeoutTime = 1
         self.sentPackets = 0
-        self.droppedPackets = 0
         self.currentSequenceNumber = 0
         self.generatedSequenceNumber = 0
         self.oldestSequenceNumber = 0
@@ -166,8 +164,6 @@ class Transmitter(LogAdapter):
                     packetTuple[0] = default_timer()
                     self.logPacket(packetTuple[1])
                     self.sendThePacket(packetTuple[1].toBytes())
-                    self.droppedPackets = self.droppedPackets + 1
-                    self.droppedPacketSignal.emit(self.droppedPackets)
 
 
     def receivingAckThread(self):
