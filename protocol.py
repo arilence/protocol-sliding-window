@@ -27,7 +27,7 @@ class PPacket:
     SEQ_SIZE = 12
     WIN_SIZE = 3
     ACK_SIZE = 12
-    DATA_SIZE = PACKET_SIZE - TYPE_SIZE - SEQ_SIZE - WIN_SIZE - ACK_SIZE - 9
+    DATA_SIZE = PACKET_SIZE - TYPE_SIZE - SEQ_SIZE - WIN_SIZE - ACK_SIZE - 8
 
     def __init__(self, packetType, seqNum, windowSize, ackNum):
         self.packetType = packetType
@@ -72,9 +72,9 @@ class PPacket:
 
         blankBytes = PPacket.DATA_SIZE - len(self.data)
         if blankBytes <= 0:
-            return packetType + seqNum + windowSize + ackNum + self.data + endOfMessage
+            return packetType + seqNum + windowSize + ackNum + self.data
         else:
-            return packetType + seqNum + windowSize + ackNum + self.data + bytearray(blankBytes) + endOfMessage
+            return packetType + seqNum + windowSize + ackNum + self.data + bytearray(blankBytes)
 
     def __str__(self):
         packetType = "{:<3.3}".format(str(self.packetType.value))
