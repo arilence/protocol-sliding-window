@@ -83,12 +83,11 @@ class Transmitter(LogAdapter):
         return True
 
     def send(self, fileLocation):
-        self.windowSize = 10
+        self.windowSize = 100
         self.timeoutTime = 0.1
         self.currentSequenceNumber = 0
         self.generatedSequenceNumber = 0
         self.oldestSequenceNumber = 0
-        #self.slidingWindow = collections.deque()
         self.slidingWindow = []
         self.packetTimer = []
 
@@ -172,12 +171,12 @@ class Transmitter(LogAdapter):
 
                     if packetResponse.packetType == PPacketType.ACK:
                         # Remove packet with ack number that matches seq number
-                        print("SLIDING: " + str(len(self.slidingWindow)))
+                        #print("SLIDING: " + str(len(self.slidingWindow)))
                         for packetTuple in self.slidingWindow:
                             if packetTuple.ackNum <= packetResponse.seqNum:
                                 self.slidingWindow.remove(packetTuple)
 
-                        print("TIMER: " + str(len(self.packetTimer)))
+                        #print("TIMER: " + str(len(self.packetTimer)))
                         for packetTuple in self.packetTimer:
                             packet = packetTuple[1]
                             if packet.ackNum <= packetResponse.seqNum:

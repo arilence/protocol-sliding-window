@@ -39,7 +39,8 @@ class PPacket:
     @staticmethod
     def parsePacket(data):
         values = data.split(b'|', maxsplit=4)
-        if len(values) == 4 or len(values) == 5:
+        if len(values) == 5:
+            #print(str(len(values[4])))
             strPacketType = values[0].decode('utf-8')
             strSeqNum = values[1].decode('utf-8')
             strWindowSize = values[2].decode('utf-8')
@@ -70,7 +71,7 @@ class PPacket:
             self.data = b''
 
         blankBytes = PPacket.DATA_SIZE - len(self.data)
-        if blankBytes == 0:
+        if blankBytes <= 0:
             return packetType + seqNum + windowSize + ackNum + self.data
         else:
             return packetType + seqNum + windowSize + ackNum + self.data + bytearray(blankBytes)
