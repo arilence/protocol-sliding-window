@@ -3,6 +3,34 @@
 --
 --      PROGRAM:            file_transport
 --
+--      FUNCTIONS:          __init__(self)
+--                          startLogFile(self, fileName)
+--                          logPacket(self, packet)
+--                          connect(self, address, port)
+--                          disconnect(self)
+--                          send(self, data)
+--                          receive(self)
+--                          startSend(self, fileLocation)
+--                          send(self, fileLocation)
+--                          sendingFileThread(self)
+--                          receivingAckThread(self)
+--                          sendThePacket(self)
+--                          start(self)
+--                          pause(self)
+--                          waitForSocket(self)
+--                          parseData(self, data)
+--                          startReceivingFile(self, packet)
+--                          receiveData(self, packet)
+--                          receiveEOT(self, packet)
+--                          replyAck(self, packet)
+--                          setBitError(self, newValue)
+--                          setDelay(self, newValue)
+--                          setupSocket(self, address, port, clientFunc)
+--                          delayPacket(self, client, rawData)
+--                          shutdown(self)
+--                          printClient(self)
+--                          removeClient(self, client)
+--
 --      DATE:               November 29, 2016
 --
 --      REVISION:           (Date and Description)
@@ -26,7 +54,7 @@ from socket import (
 )
 from threading import Thread
 from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QObject)
-from protocol import PWindow, PPacket, PPacketType
+from protocol import PPacket, PPacketType
 from timeit import default_timer
 import time, sys, os, collections, ntpath, math
 import select as fileSelect
