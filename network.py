@@ -365,21 +365,21 @@ class Emulator(QObject):
             if not rawData:
                 break
             else:
-                # packet = PPacket.parsePacket(rawData)
-                # if packet.packetType == PPacketType.DCN:
-                #     self.removeClient(client)
-                #     print("Client Disconnected")
-                # else:
-                num = randint(0,100)
-                if self.bitErrorValue < num:
-                    if self.delayValue == 0:
-                        self.sendPacket(client, rawData)
-                    else:
-                        self.delayPacket(client, rawData)
+                packet = PPacket.parsePacket(rawData)
+                if packet.packetType == PPacketType.DCN:
+                    self.removeClient(client)
+                    print("Client Disconnected")
                 else:
-                    print("Drop Packet")
-                    self.droppedPackets += 1
-                    self.droppedPacketSignal.emit(str(self.droppedPackets))
+                    num = randint(0,100)
+                    if self.bitErrorValue < num:
+                        if self.delayValue == 0:
+                            self.sendPacket(client, rawData)
+                        else:
+                            self.delayPacket(client, rawData)
+                    else:
+                        print("Drop Packet")
+                        self.droppedPackets += 1
+                        self.droppedPacketSignal.emit(str(self.droppedPackets))
 
     def sendPacket(self, client, rawData):
         if client is self.client1:
