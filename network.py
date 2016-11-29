@@ -382,24 +382,28 @@ class Emulator(QObject):
                     if self.delayValue == 0:
                         self.sendPacket(client, rawData)
                     else:
-                        self.delayValue
+                        self.delayPacket(client, rawData)
                 else:
+                    print("Drop Packet")
                     self.droppedPackets += 1
                     self.droppedPacketSignal.emit(str(self.droppedPackets))
 
     def sendPacket(self, client, rawData):
         if client is self.client1:
             self.client2.send(rawData)
-            print("Client 1 -> Client 2")
+            #print("Client 1 -> Client 2")
         if client is self.client2:
             self.client1.send(rawData)
-            print("Client 2 -> Client 1")
+            #print("Client 2 -> Client 1")
 
-    def delayPacket(self, milliseconds, client, rawData):
+    def delayPacket(self, client, rawData):
+        print("Delay packet for: " + str((self.delayValue / 1000)))
         waitTime = default_timer()
 
-        while default_timer() - waitTime <= milliseconds:
-            self.sendPacket(client, rawData)
+        while default_timer() - waitTime <= (self.delayValue / 1000):
+            pass
+
+        self.sendPacket(client, rawData)
 
     def shutdown(self):
         try:

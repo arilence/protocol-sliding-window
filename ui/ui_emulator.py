@@ -81,7 +81,7 @@ class Ui_Emulator(object):
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.delaySlider = QtWidgets.QSlider(self.centralwidget)
-        self.delaySlider.setMaximum(100)
+        self.delaySlider.setMaximum(1000)
         self.delaySlider.setOrientation(QtCore.Qt.Horizontal)
         self.delaySlider.setObjectName("delaySlider")
         self.horizontalLayout_2.addWidget(self.delaySlider)
