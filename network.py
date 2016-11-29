@@ -232,7 +232,8 @@ class Receiver(LogAdapter):
                 # ready to receive
                 rawData = self.network.receive()
                 if rawData:
-                    Thread(target=self.parseData, args=(rawData,)).start()
+                    self.parseData(rawData)
+                    #Thread(target=self.parseData, args=(rawData,)).start()
 
     def parseData(self, data):
         packetInput = PPacket.parsePacket(data)
@@ -354,7 +355,7 @@ class Emulator:
             n = PPacket.PACKET_SIZE
             theData = b''
             while len(theData) < n:
-                packet = self.theSocket.recv(n - len(theData))
+                packet = client.recv(n - len(theData))
                 if not packet:
                     return None
                 theData += packet
