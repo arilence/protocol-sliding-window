@@ -85,7 +85,7 @@ class Transmitter(LogAdapter):
         return True
 
     def send(self, fileLocation):
-        self.windowSize = 100
+        self.windowSize = 10
         self.timeoutTime = 0.5
         self.sentPackets = 0
         self.droppedPackets = 0
