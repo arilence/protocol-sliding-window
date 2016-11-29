@@ -174,41 +174,63 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QWidget" name="verticalWidget" native="true">
+           <widget class="QWidget" name="horiWidget" native="true">
             <property name="minimumSize">
              <size>
               <width>0</width>
               <height>100</height>
              </size>
             </property>
-            <layout class="QVBoxLayout" name="verticalLayout_3">
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout">
+              <layout class="QVBoxLayout" name="verticalLayout_3">
                <item>
-                <widget class="QLineEdit" name="fileLocationInput">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </widget>
+                <layout class="QHBoxLayout" name="horizontalLayout">
+                 <item>
+                  <widget class="QLineEdit" name="fileLocationInput">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="fileLocationBtn">
+                   <property name="text">
+                    <string>Browse</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
                <item>
-                <widget class="QPushButton" name="fileLocationBtn">
+                <widget class="QPushButton" name="sendBtn">
                  <property name="text">
-                  <string>Browse</string>
+                  <string>Send File</string>
                  </property>
                 </widget>
                </item>
               </layout>
              </item>
              <item>
-              <widget class="QPushButton" name="sendBtn">
-               <property name="text">
-                <string>Send File</string>
-               </property>
-              </widget>
+              <layout class="QVBoxLayout" name="verticalLayout_4">
+               <item>
+                <widget class="QLabel" name="sentPackets">
+                 <property name="text">
+                  <string>Sent Packets: 0</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="droppedPackets">
+                 <property name="text">
+                  <string>Dropped Packets: 0</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
             </layout>
            </widget>

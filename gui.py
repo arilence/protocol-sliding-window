@@ -106,6 +106,8 @@ class ClientWindow(QMainWindow, Ui_Client):
         self.network.logSignal.connect(self.logMessage)
         self.transmitter.logSignal.connect(self.logMessage)
         self.receiver.logSignal.connect(self.logMessage)
+        self.transmitter.sentPacketSignal.connect(self.updateSentPackets)
+        self.transmitter.droppedPacketSignal.connect(self.updateDroppedPackets)
 
     def setConnected(self, connected):
         self.isConnected = connected
@@ -176,3 +178,9 @@ class ClientWindow(QMainWindow, Ui_Client):
 
     def clearLogMessages(self):
         self.logOutput.clear()
+
+    def updateSentPackets(self, num):
+        self.sentPackets.setText("Sent Packets: " + str(num))
+
+    def updateDroppedPackets(self, num):
+        self.droppedPackets.setText("Dropped Packets: " + str(num))

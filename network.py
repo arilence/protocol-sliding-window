@@ -14,6 +14,8 @@ ENCODING_TYPE = "utf-8"
 
 class LogAdapter(QObject):
     logSignal = pyqtSignal(str)
+    droppedPacketSignal = pyqtSignal(int)
+    sentPacketSignal = pyqtSignal(int)
 
     def __init__(self):
         super(QObject, self).__init__()
@@ -84,7 +86,9 @@ class Transmitter(LogAdapter):
 
     def send(self, fileLocation):
         self.windowSize = 100
-        self.timeoutTime = 0.1
+        self.timeoutTime = 2
+        self.sentPackets = 0
+        self.droppedPackets = 0
         self.currentSequenceNumber = 0
         self.generatedSequenceNumber = 0
         self.oldestSequenceNumber = 0
@@ -118,7 +122,7 @@ class Transmitter(LogAdapter):
                     self.slidingWindow.append(packet)
                     self.packetTimer.append([default_timer(), packet])
                     self.logPacket(packet)
-                    self.network.send(packet.toBytes())
+                    self.sendThePacket(packet.toBytes())
                     self.currentState = PPacketType.DATA
                     self.generatedSequenceNumber = self.generatedSequenceNumber + 2
 
@@ -132,7 +136,7 @@ class Transmitter(LogAdapter):
                         self.slidingWindow.append(packet)
                         self.packetTimer.append([default_timer(), packet])
                         self.logPacket(packet)
-                        self.network.send(packet.toBytes())
+                        self.sendThePacket(packet.toBytes())
                         self.generatedSequenceNumber = self.generatedSequenceNumber + 2
                     else:
                         self.currentState = PPacketType.EOT
@@ -144,7 +148,7 @@ class Transmitter(LogAdapter):
                     self.slidingWindow.append(packet)
                     self.packetTimer.append([default_timer(), packet])
                     self.logPacket(packet)
-                    self.network.send(packet.toBytes())
+                    self.sendThePacket(packet.toBytes())
                     self.doneReadingFile = True
                     self.generatedSequenceNumber = self.generatedSequenceNumber + 2
 
@@ -153,7 +157,9 @@ class Transmitter(LogAdapter):
                 if default_timer() - packetTuple[0] >= self.timeoutTime:
                     packetTuple[0] = default_timer()
                     self.logPacket(packetTuple[1])
-                    self.network.send(packetTuple[1].toBytes())
+                    self.sendThePacket(packetTuple[1].toBytes())
+                    self.droppedPackets = self.droppedPackets + 1
+                    self.droppedPacketSignal.emit(self.droppedPackets)
 
 
     def receivingAckThread(self):
@@ -171,12 +177,10 @@ class Transmitter(LogAdapter):
 
                     if packetResponse.packetType == PPacketType.ACK:
                         # Remove packet with ack number that matches seq number
-                        #print("SLIDING: " + str(len(self.slidingWindow)))
                         for packetTuple in self.slidingWindow:
                             if packetTuple.ackNum <= packetResponse.seqNum:
                                 self.slidingWindow.remove(packetTuple)
 
-                        #print("TIMER: " + str(len(self.packetTimer)))
                         for packetTuple in self.packetTimer:
                             packet = packetTuple[1]
                             if packet.ackNum <= packetResponse.seqNum:
@@ -184,12 +188,16 @@ class Transmitter(LogAdapter):
 
                         # increase sequence number
                         self.currentSequenceNumber = packetResponse.seqNum
-                        #self.logSignal.emit("{} | {}".format(str(self.currentSequenceNumber), str(self.generatedSequenceNumber)))
 
                         # if no more packets in sliding window, file finished!
                         if len(self.slidingWindow) <= 0 and self.currentState == PPacketType.EOT:
                             self.logSignal.emit("FILE TRANSFER COMPLETE")
                             self.sendingFileData = False
+
+    def sendThePacket(self, packet):
+        self.network.send(packet)
+        self.sentPackets += 1
+        self.sentPacketSignal.emit(self.sentPackets)
 
 class Receiver(LogAdapter):
     def __init__(self, network):
