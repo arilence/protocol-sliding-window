@@ -22,12 +22,12 @@ class PPacketType(Enum):
     DCN  = 5
 
 class PPacket:
-    PACKET_SIZE = 8192
+    PACKET_SIZE = 4096
     TYPE_SIZE = 3
     SEQ_SIZE = 12
     WIN_SIZE = 3
     ACK_SIZE = 12
-    DATA_SIZE = PACKET_SIZE - TYPE_SIZE - SEQ_SIZE - WIN_SIZE - ACK_SIZE - 8
+    DATA_SIZE = PACKET_SIZE - TYPE_SIZE - SEQ_SIZE - WIN_SIZE - ACK_SIZE - 9
 
     def __init__(self, packetType, seqNum, windowSize, ackNum):
         self.packetType = packetType
@@ -65,15 +65,16 @@ class PPacket:
         seqNum = ("||{:<12.12}".format(str(self.seqNum))).encode('utf-8')
         windowSize = ("||{:<3.3}".format(str(self.windowSize))).encode('utf-8')
         ackNum = ("||{:<12.12}||".format(str(self.ackNum))).encode('utf-8')
+        endOfMessage = (":").encode('utf-8')
 
         if not self.data:
             self.data = b''
 
         blankBytes = PPacket.DATA_SIZE - len(self.data)
         if blankBytes <= 0:
-            return packetType + seqNum + windowSize + ackNum + self.data
+            return packetType + seqNum + windowSize + ackNum + self.data + endOfMessage
         else:
-            return packetType + seqNum + windowSize + ackNum + self.data + bytearray(blankBytes)
+            return packetType + seqNum + windowSize + ackNum + self.data + bytearray(blankBytes) + endOfMessage
 
     def __str__(self):
         packetType = "{:<3.3}".format(str(self.packetType.value))
