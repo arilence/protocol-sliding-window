@@ -371,7 +371,7 @@ class Emulator(QObject):
                     print("Client Disconnected")
                 else:
                     num = randint(0,100)
-                    if self.bitErrorValue < num:
+                    if self.bitErrorValue <= num:
                         if self.delayValue == 0:
                             self.sendPacket(client, rawData)
                         else:
