@@ -25,9 +25,6 @@ class LogAdapter(QObject):
         fileLoc = os.path.join(".", fileName)
         self.logFile = open(os.path.abspath(fileLoc), 'wb')
 
-    def stopLogFile(self):
-        self.logFile.close()
-
     def logPacket(self, packet):
         packetInfo = "Type: {}, Seq: {}, Ack: {}".format(
             str(packet.packetType), str(packet.seqNum), str(packet.ackNum)
@@ -258,10 +255,6 @@ class Receiver(LogAdapter):
 
         self.logPacket(packetInput)
         self.replyAck(packetInput)
-
-        if not self.receivingFile and packetInput.packetType == PPacketType.EOT:
-            if self.logging:
-                self.stopLogFile()
 
     def startReceivingFile(self, packet):
         self.logSignal.emit("START RECEIVING FILE")
