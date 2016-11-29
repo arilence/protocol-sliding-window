@@ -354,7 +354,7 @@ class Emulator:
             n = PPacket.PACKET_SIZE
             theData = b''
             while len(theData) < n:
-                packet = self.sockObj.recv(n - len(theData))
+                packet = self.theSocket.recv(n - len(theData))
                 if not packet:
                     return None
                 theData += packet
