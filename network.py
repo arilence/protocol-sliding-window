@@ -348,17 +348,17 @@ class Emulator:
             if not rawData:
                 break
             else:
-                packet = PPacket.parsePacket(rawData)
-                if packet.packetType == PPacketType.DCN:
-                    self.removeClient(client)
-                    print("Client Disconnected")
-                else:
-                    num = randint(0,100)
-                    if self.bitErrorValue < num:
-                        if self.delayValue == 0:
-                            self.sendPacket(client, rawData)
-                        else:
-                            self.delayValue
+                # packet = PPacket.parsePacket(rawData)
+                # if packet.packetType == PPacketType.DCN:
+                #     self.removeClient(client)
+                #     print("Client Disconnected")
+                # else:
+                num = randint(0,100)
+                if self.bitErrorValue < num:
+                    if self.delayValue == 0:
+                        self.sendPacket(client, rawData)
+                    else:
+                        self.delayValue
 
     def sendPacket(self, client, rawData):
         if client is self.client1:
