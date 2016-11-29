@@ -195,6 +195,7 @@ class Transmitter(LogAdapter):
                             self.sendingFileData = False
 
     def sendThePacket(self, packet):
+        print(str(len(packet)))
         self.network.send(packet)
         self.sentPackets += 1
         self.sentPacketSignal.emit(self.sentPackets)
