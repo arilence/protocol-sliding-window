@@ -340,13 +340,24 @@ class Emulator:
                 else:
                     num = randint(0,100)
                     if self.bitErrorValue < num:
-                        if client is self.client1:
-                            self.client2.send(rawData)
-                            print("Client 1 -> Client 2")
-                        if client is self.client2:
-                            self.client1.send(rawData)
-                            print("Client 2 -> Client 1")
+                        if self.delayValue == 0:
+                            self.sendPacket(client, rawData)
+                        else:
+                            self.delayValue
 
+    def sendPacket(self, client, rawData):
+        if client is self.client1:
+            self.client2.send(rawData)
+            print("Client 1 -> Client 2")
+        if client is self.client2:
+            self.client1.send(rawData)
+            print("Client 2 -> Client 1")
+
+    def delayPacket(self, milliseconds, client, rawData):
+        waitTime = default_timer()
+
+        while default_timer() - waitTime <= milliseconds:
+            self.sendPacket(client, rawData)
 
     def shutdown(self):
         try:
