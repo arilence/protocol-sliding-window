@@ -241,6 +241,8 @@ class Receiver(LogAdapter):
         if not packetInput:
             return
 
+        self.windowSize = packetInput.windowSize
+
         # Accept SYN if not currently in the middle of a transfer
         if not self.receivingFile and packetInput.packetType == PPacketType.SYN:
             self.startReceivingFile(packetInput)
