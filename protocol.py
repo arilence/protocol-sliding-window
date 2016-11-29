@@ -27,7 +27,7 @@ class PPacket:
     SEQ_SIZE = 12
     WIN_SIZE = 3
     ACK_SIZE = 12
-    DATA_SIZE = PACKET_SIZE - TYPE_SIZE - SEQ_SIZE - WIN_SIZE - ACK_SIZE - 4
+    DATA_SIZE = PACKET_SIZE - TYPE_SIZE - SEQ_SIZE - WIN_SIZE - ACK_SIZE - 8
 
     def __init__(self, packetType, seqNum, windowSize, ackNum):
         self.packetType = packetType
@@ -38,9 +38,8 @@ class PPacket:
 
     @staticmethod
     def parsePacket(data):
-        values = data.split(b'|', maxsplit=4)
+        values = data.split(b'||', maxsplit=4)
         if len(values) == 5:
-            #print(str(len(values[4])))
             strPacketType = values[0].decode('utf-8')
             strSeqNum = values[1].decode('utf-8')
             strWindowSize = values[2].decode('utf-8')
@@ -63,9 +62,9 @@ class PPacket:
 
     def toBytes(self):
         packetType = "{:<3.3}".format(str(self.packetType.value)).encode('utf-8')
-        seqNum = "|{:<12.12}".format(str(self.seqNum)).encode('utf-8')
-        windowSize = "|{:<3.3}".format(str(self.windowSize)).encode('utf-8')
-        ackNum = "|{:<12.12}|".format(str(self.ackNum)).encode('utf-8')
+        seqNum = "||{:<12.12}".format(str(self.seqNum)).encode('utf-8')
+        windowSize = "||{:<3.3}".format(str(self.windowSize)).encode('utf-8')
+        ackNum = "||{:<12.12}||".format(str(self.ackNum)).encode('utf-8')
 
         if not self.data:
             self.data = b''
