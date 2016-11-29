@@ -6,7 +6,6 @@ def parseCmdArguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--ip', help='host ip to bind to', default='')
     parser.add_argument('--port', help='port number to listen on', default=7005, type=int)
-    parser.add_argument('--receiver', help='starts up in receiver mode', action='store_true')
     parser.add_argument('--emulator', help='starts up in network emulator mode', action='store_true')
     args = parser.parse_args()
     return args
