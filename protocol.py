@@ -61,10 +61,10 @@ class PPacket:
         self.data = data
 
     def toBytes(self):
-        packetType = "{:<3.3}".format(str(self.packetType.value)).encode('utf-8')
-        seqNum = "||{:<12.12}".format(str(self.seqNum)).encode('utf-8')
-        windowSize = "||{:<3.3}".format(str(self.windowSize)).encode('utf-8')
-        ackNum = "||{:<12.12}||".format(str(self.ackNum)).encode('utf-8')
+        packetType = ("{:<3.3}".format(str(self.packetType.value))).encode('utf-8')
+        seqNum = ("||{:<12.12}".format(str(self.seqNum))).encode('utf-8')
+        windowSize = ("||{:<3.3}".format(str(self.windowSize))).encode('utf-8')
+        ackNum = ("||{:<12.12}||".format(str(self.ackNum))).encode('utf-8')
 
         if not self.data:
             self.data = b''
