@@ -65,13 +65,12 @@ class PPacket:
         seqNum = ("||{:<12.12}".format(str(self.seqNum))).encode('utf-8')
         windowSize = ("||{:<3.3}".format(str(self.windowSize))).encode('utf-8')
         ackNum = ("||{:<12.12}||".format(str(self.ackNum))).encode('utf-8')
-        endOfMessage = (":").encode('utf-8')
 
         if not self.data:
             self.data = b''
 
         blankBytes = PPacket.DATA_SIZE - len(self.data)
-        if blankBytes <= 0:
+        if blankBytes == 0:
             return packetType + seqNum + windowSize + ackNum + self.data
         else:
             return packetType + seqNum + windowSize + ackNum + self.data + bytearray(blankBytes)

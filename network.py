@@ -60,17 +60,18 @@ class NetworkAdapter(LogAdapter):
         return True
 
     def send(self, data):
-        self.sockObj.send(data)
+        self.sockObj.sendall(data)
 
     def receive(self):
-        length = 0
+        #return self.sockObj.recv(PPacket.PACKET_SIZE)
+        n = PPacket.PACKET_SIZE
         data = b''
-        while True:
-            data += self.sockObj.recv(PPacket.PACKET_SIZE)
-            length += len(data)
-
-            if length == PPacket.PACKET_SIZE:
-                return data
+        while len(data) < n:
+            packet = self.sockObj.recv(n - len(data))
+            if not packet:
+                return None
+            data += packet
+        return data
 
 class Transmitter(LogAdapter):
     def __init__(self, network):
