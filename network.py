@@ -63,7 +63,14 @@ class NetworkAdapter(LogAdapter):
         self.sockObj.send(data)
 
     def receive(self):
-        return self.sockObj.recv(PPacket.PACKET_SIZE)
+        length = 0
+        data = b''
+        while True:
+            data += self.sockObj.recv(PPacket.PACKET_SIZE)
+            length += len(data)
+
+            if length == PPacket.PACKET_SIZE:
+                return data
 
 class Transmitter(LogAdapter):
     def __init__(self, network):
