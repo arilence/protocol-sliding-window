@@ -38,6 +38,7 @@ class PPacket:
 
     @staticmethod
     def parsePacket(data):
+        print(str(len(data)))
         values = data.split(b'||', maxsplit=4)
         if len(values) == 5:
             strPacketType = values[0].decode('utf-8')
