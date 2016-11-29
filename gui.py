@@ -1,3 +1,22 @@
+"""---------------------------------------------------------------------------------------
+--      SOURCE FILE:        gui.py - file that holds the gui initialization
+--
+--      PROGRAM:            file_transport
+--
+--      DATE:               November 29, 2016
+--
+--      REVISION:           (Date and Description)
+--
+--      DESIGNERS:          Anthony Smith
+--
+--      PROGRAMMERS:        Anthony Smith
+--
+--      NOTES:
+--      This file contains the gui initialization to show an interface to the user.
+--      The Transmitter and Receiver network classes use the same GUI to ease of access.
+--      Where the network emulator has a seperate interface to display dropped packets,
+--      bit error rate, and delay per packet.
+---------------------------------------------------------------------------------------"""
 import sys, ntpath, os
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *

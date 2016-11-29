@@ -1,5 +1,22 @@
+"""---------------------------------------------------------------------------------------
+--      SOURCE FILE:        protocol.py - file that contains the structure of packets
+--
+--      PROGRAM:            file_transport
+--
+--      DATE:               November 29, 2016
+--
+--      REVISION:           (Date and Description)
+--
+--      DESIGNERS:          Anthony Smith
+--
+--      PROGRAMMERS:        Anthony Smith
+--
+--      NOTES:
+--      This file contains the structure of each data packet and the required methods
+--      to convert to bytes for sending over python sockets, as well as parsing from
+--      bytes when receiving from a socket.
+---------------------------------------------------------------------------------------"""
 from enum import Enum
-import base64
 
 class PPacketType(Enum):
     def __str__(self):
@@ -89,7 +106,3 @@ class PPacket:
         s += ackNum + "|"
         s += data
         return s
-
-class PWindow:
-    def __init__(self, windowSize):
-        pass

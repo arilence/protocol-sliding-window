@@ -1,3 +1,25 @@
+"""---------------------------------------------------------------------------------------
+--      SOURCE FILE:        network.py - file that holds the three network modules
+--
+--      PROGRAM:            file_transport
+--
+--      DATE:               November 29, 2016
+--
+--      REVISION:           (Date and Description)
+--
+--      DESIGNERS:          Anthony Smith
+--
+--      PROGRAMMERS:        Anthony Smith
+--
+--      NOTES:
+--      This file contains three network modules: Transmitter, Receiver, and Emulator.
+--      The Transmitter waits for a file to be requests to send over the network, and
+--      then uses the sliding window protocol to send multiple packets at the same time.
+--      The Receiver waits for packets to be sent from the Transmitter and saves the
+--      data to a file. The Emulator is the middleman that forwards the packets from
+--      the Transmitter to the Receiver and vice versa. It also enables for changing
+--      the bit error rate, and delay of each packet.
+---------------------------------------------------------------------------------------"""
 from socket import (
     socket, gethostbyname, gaierror,
     AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR, SO_SNDBUF, SHUT_RDWR

@@ -1,3 +1,23 @@
+"""---------------------------------------------------------------------------------------
+--      SOURCE FILE:        app.py - main entry point of the application
+--
+--      PROGRAM:            file_transport
+--
+--      DATE:               November 29, 2016
+--
+--      REVISION:           (Date and Description)
+--
+--      DESIGNERS:          Anthony Smith
+--
+--      PROGRAMMERS:        Anthony Smith
+--
+--      NOTES:
+--      This program is the main entry point for a file transfer program that uses a
+--      custom sliding window based transfer protocol. It will run in either Client mode
+--      or Server depends on the specified arguments.
+--      Specifying a flag --emulator will start the program in server / network emulator
+--      mode.
+---------------------------------------------------------------------------------------"""
 import sys, argparse
 from network import *
 from gui import *
