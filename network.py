@@ -210,6 +210,7 @@ class Transmitter(LogAdapter):
 class Receiver(LogAdapter):
     def __init__(self, network):
         super(LogAdapter, self).__init__()
+        self.sequenceNumber = 0
         self.keepListening = False
         self.receivingFile = False
         self.logging = True
